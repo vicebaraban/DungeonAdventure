@@ -1,33 +1,28 @@
 class Character:
+    def __init__(self):
+        pass
+
+
+class Player(Character):
     pass
 
 
-class PlayerCharacter(Character):
+class NPC(Character):
     pass
 
 
-class NonPlayerCharacter(Character):
-    pass
+class Item:
+    def __init__(self):
+        pass
 
 
-class Enemy(NonPlayerCharacter):
-    pass
-
-
-class NeutralPerson(NonPlayerCharacter):
-    pass
-
-
-class Entity:
-    pass
-
-
-class Weapon(Entity):
+class Weapon(Item):
     pass
 
 
 class Menu:
-    pass
+    def __init__(self):
+        pass
 
 
 class MainMenu(Menu):
@@ -39,4 +34,5 @@ class PauseMenu(Menu):
 
 
 class Map:
-    pass
+    def __init__(self):
+        pass
