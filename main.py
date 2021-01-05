@@ -14,13 +14,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = False
 
-    def main_loop(self):
+    def _main_loop(self):
         while self.running:
-            self.screen.fill(pygame.Color('black'))
-            events = pygame.event.get()
-            for event in events:
-                if event.type == pygame.QUIT:
-                    self.terminate()
+            self._process_events()
+            self.screen.fill('black')
             # отрисовка
             # обновление
             self.clock.tick(FPS)
@@ -29,11 +26,16 @@ class Game:
     def run(self):
         self.running = True
         while self.running:
-            self.main_loop()
+            self._main_loop()
 
-    def terminate(self):
+    def _terminate(self):
         pygame.quit()
         sys.exit()
+
+    def _process_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self._terminate()
 
 
 if __name__ == '__main__':

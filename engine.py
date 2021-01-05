@@ -1,6 +1,6 @@
 class Character:
-    def __init__(self):
-        pass
+    def __init__(self, pos):
+        self.pos = self.x, self.y = pos
 
 
 class Player(Character):
@@ -12,8 +12,8 @@ class NPC(Character):
 
 
 class Item:
-    def __init__(self):
-        pass
+    def __init__(self, pos):
+        self.pos = self.x, self.y = pos
 
 
 class Weapon(Item):
