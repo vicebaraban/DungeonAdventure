@@ -19,7 +19,7 @@ class Game:
         pygame.display.set_caption('XYgame')
 
     def _init_player(self):
-        self._character = engine.PlayerCharacter((0, 0))
+        self._character = engine.Player((0, 0))
 
     def _init_game_map(self):
         pass

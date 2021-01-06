@@ -31,7 +31,7 @@ class CharacterSprite(pygame.sprite.GroupSingle):
         self.add(char_sprite)
 
 
-class PlayerCharacter(Character):
+class Player(Character):
     def __init__(self, position):
         super().__init__(position)
         self._sprite = CharacterSprite('character.png')
