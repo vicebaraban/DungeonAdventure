@@ -9,6 +9,7 @@ _all_sprites = pygame.sprite.Group()
 _tile_sprites = pygame.sprite.Group()
 _impenetrable = pygame.sprite.Group()
 _player_sprites = pygame.sprite.Group()
+_bullets = pygame.sprite.Group()
 
 
 class MoveDirection(Enum):
@@ -39,10 +40,36 @@ class Character:
     def __init__(self, sprite_type, pos, *groups):
         self._sprite = Sprite(sprite_type, pos, groups)
         self.position = self.x, self.y = pos
+        self.angle = 0
+        self.inventory = {'first_weapon': 'pistol', 'second_gun': 'rifle'}
 
     def look_away(self, additional_coords):
         angle = math_operations.calculate_angle(*self.position, *additional_coords)
         return angle
+
+    def get_pos(self):
+        return self.position
+
+    def get_angle(self):
+        return self.angle
+
+    def _select_weapon(self, mode):
+        if mode == 1:
+            weapon = self.inventory['first_weapon']
+        elif mode == 2:
+            weapon = self.inventory['second_weapon']
+        # ...
+        else:
+            weapon = None
+        return weapon
+
+    def attack(self, mode):
+        weapon = self._select_weapon(mode)
+        if weapon is not None:
+            if weapon == 'pistol':
+                bullet = Bullet(*self.position, ...)
+                _all_sprites.add(bullet)
+                _bullets.add(bullet)
 
 
 class Player(Character):
@@ -51,23 +78,18 @@ class Player(Character):
 
     # def draw(self, surface: pygame.Surface):
     #     print(self.look_away(pygame.mouse.get_pos()))
-    #     # self.image = pygame.transform.rotate(self.image,
-    #     #                                      self.look_away(pygame.mouse.get_pos()))
+    #     self.image = pygame.transform.rotate(self.image,
+    #                                            self.look_away(pygame.mouse.get_pos()))
     #     self._sprite.draw(surface)
+    #     self._sprite.draw(surface.subsurface(0, 0, 80, 80))
 
-    def move(self, direction: MoveDirection):
-        if direction == MoveDirection.UP:
-            self.position = math_operations.change_position(
-                self.position, angle, data.MAIN_CHAR_SPEED, 1)
-        elif direction == MoveDirection.DOWN:
-            self.position = math_operations.change_position(
-                self.position, angle, data.MAIN_CHAR_SPEED, 2)
-        elif direction == MoveDirection.LEFT:
-            self.position = math_operations.change_position(
-                self.position, angle, data.MAIN_CHAR_SPEED, 3)
-        else:
-            self.position = math_operations.change_position(
-                self.position, angle, data.MAIN_CHAR_SPEED, 4)
+    def update(self): # будет вызываться в render_screen
+        self.angle = self.look_away(pygame.mouse.get_pos())
+        # self.draw()
+        # ...
+
+    def move(self, direction: MoveDirection): # возможно стоит перенести в Character
+        pass # из main перенести операции сюда
 
 
 class NPC(Character):
@@ -76,6 +98,22 @@ class NPC(Character):
 
 class Item:
     pass
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y, sprite_type, pos, groups):
+        pygame.sprite.Sprite.__init__(self)
+        self._sprite = Sprite(sprite_type, pos, groups)
+        self._start_position = x, y
+        self._time = data.BULLET_TIME
+        self._speed = data.BULLET_SPEED
+
+    def draw(self):
+        # self._sprite.move(...) используя данные f change_position(.., direction=1)
+        pass
+
+    def update(self): # аналогично с Character
+        self.draw()
 
 
 class Weapon(Item):

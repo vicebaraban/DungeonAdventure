@@ -1,7 +1,7 @@
 import sys
 import pygame
-import data
 import engine
+import data
 
 
 class Game:
@@ -50,29 +50,35 @@ class Game:
             if event.type == pygame.KEYUP:
                 if event.key in (pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT):
                     self._move_events(event)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self._attack_events(event)
 
     def _move_events(self, event):
         if event.key == pygame.K_RIGHT:
-            self._character._sprite.vx += 150 * (1 if event.type == pygame.KEYDOWN else -1)
+            self._character._sprite.vx += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
         if event.key == pygame.K_LEFT:
-            self._character._sprite.vx += -150 * (1 if event.type == pygame.KEYDOWN else -1)
+            self._character._sprite.vx += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
         if event.key == pygame.K_UP:
-            self._character._sprite.vy += -150 * (1 if event.type == pygame.KEYDOWN else -1)
+            self._character._sprite.vy += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
         if event.key == pygame.K_DOWN:
-            self._character._sprite.vy += 150 * (1 if event.type == pygame.KEYDOWN else -1)
+            self._character._sprite.vy += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
 
-    def _terminate(self):
-        pygame.quit()
-        sys.exit()
+    def _attack_events(self, event):
+        if event.button == 1:
+            self._character.attack(1)
 
-    def _update_camera(self):
-        pass
+        def _terminate(self):
+            pygame.quit()
+            sys.exit()
 
-    def _render_screen(self):
-        self._screen.fill(pygame.Color('Black'))
-        engine._all_sprites.draw(self._screen)
-        engine._all_sprites.update(self._events)
-        pygame.display.flip()
+        def _update_camera(self):
+            pass
+
+        def _render_screen(self):
+            self._screen.fill(pygame.Color('Black'))
+            engine._all_sprites.draw(self._screen)
+            engine._all_sprites.update(self._events)
+            pygame.display.flip()
 
 
 if __name__ == '__main__':
