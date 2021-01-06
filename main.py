@@ -1,7 +1,7 @@
 import sys
 import pygame
+import data
 import engine
-import constants
 
 
 class Game:
@@ -15,11 +15,11 @@ class Game:
         self._init_camera()
 
     def _init_screen(self):
-        self._screen = pygame.display.set_mode(constants.RESOLUTION)
+        self._screen = pygame.display.set_mode(data.RESOLUTION)
         pygame.display.set_caption('XYgame')
 
     def _init_player(self):
-        self._character = engine.Player((0, 0))
+        self._character = engine.Player((5, 5))
 
     def _init_game_map(self):
         pass
@@ -37,24 +37,29 @@ class Game:
             self._process_events()
             self._update_camera()
             self._render_screen()
-            self.clock.tick(constants.FPS)
+            self.clock.tick(data.FPS)
 
     def _process_events(self):
-        for event in pygame.event.get():
+        self._events = pygame.event.get()
+        for event in self._events:
             if event.type == pygame.QUIT:
                 self._terminate()
             if event.type == pygame.KEYDOWN:
-                self._move_events(event)
+                if event.key in (pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT):
+                    self._move_events(event)
+            if event.type == pygame.KEYUP:
+                if event.key in (pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT):
+                    self._move_events(event)
 
     def _move_events(self, event):
+        if event.key == pygame.K_RIGHT:
+            self._character._sprite.vx += 150 * (1 if event.type == pygame.KEYDOWN else -1)
+        if event.key == pygame.K_LEFT:
+            self._character._sprite.vx += -150 * (1 if event.type == pygame.KEYDOWN else -1)
+        if event.key == pygame.K_UP:
+            self._character._sprite.vy += -150 * (1 if event.type == pygame.KEYDOWN else -1)
         if event.key == pygame.K_DOWN:
-            self._character.move(engine.MoveDirection.DOWN)
-        elif event.key == pygame.K_UP:
-            self._character.move(engine.MoveDirection.UP)
-        elif event.key == pygame.K_RIGHT:
-            self._character.move(engine.MoveDirection.RIGHT)
-        elif event.key == pygame.K_LEFT:
-            self._character.move(engine.MoveDirection.LEFT)
+            self._character._sprite.vy += 150 * (1 if event.type == pygame.KEYDOWN else -1)
 
     def _terminate(self):
         pygame.quit()
@@ -65,7 +70,8 @@ class Game:
 
     def _render_screen(self):
         self._screen.fill(pygame.Color('Black'))
-        # self._field.draw(self._screen)
+        engine._all_sprites.draw(self._screen)
+        engine._all_sprites.update(self._events)
         pygame.display.flip()
 
 

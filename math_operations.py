@@ -2,26 +2,37 @@ import math
 
 
 def coord_quarter(x1, y1, x2, y2):
-    if x2 >= x1 and y2 >= y1:
+    if x2 > x1 and y2 < y1:
         return 1
-    elif x2 <= x1 and y2 >= y1:
+    elif x2 < x1 and y2 < y1:
         return 2
-    elif x2 <= x1 and y2 <= y1:
+    elif x2 < x1 and y2 > y1:
         return 3
-    return 4
+    elif x2 > x1 and y2 > y1:
+        return 4
+    return 0
 
 
 def calculate_angle(x1, y1, x2, y2):
     quarter = coord_quarter(x1, y1, x2, y2)
-    len_x, len_y = x2 - x1, y2 - y1
-    if quarter == 1:
-        angle = int(math.atan(math.radians(len_x / len_y)))
+    len_x, len_y = x2 - x1, y1 - y2
+    if not quarter:
+        if len_y == 0 and len_x > 0:
+            angle = 90
+        elif len_y == 0 and len_x < 0:
+            angle = 270
+        elif len_x == 0 and len_y < 0:
+            angle = 180
+        else:
+            angle = 0
+    elif quarter == 1:
+        angle = int(math.degrees(math.atan(len_x / len_y)))
     elif quarter == 2:
-        angle = 270 - int(math.atan(math.radians(len_x / len_y)))
+        angle = 270 - int(math.degrees(math.atan(len_x / len_y)))
     elif quarter == 3:
-        angle = 180 + int(math.atan(math.radians(len_x / len_y)))
+        angle = 180 + int(math.degrees(math.atan(len_x / len_y)))
     else:
-        angle = 90 - int(math.atan(math.radians(len_x / len_y)))
+        angle = 90 - int(math.degrees(math.atan(len_x / len_y)))
     return angle
 
 
@@ -79,7 +90,7 @@ def change_position(start_position, angle, speed, direction):
             x_speed = int(speed * math.cos(math.radians(angle)))
             y_speed = int(-speed * math.sin(math.radians(angle)))
         elif magic_number == 4:
-            x_speed = int(speed * math.sin(math.radians( angle)))
+            x_speed = int(speed * math.sin(math.radians(angle)))
             y_speed = int(-speed * math.cos(math.radians(angle)))
         elif magic_number == 3:
             x_speed = int(-speed * math.cos(math.radians(angle)))
@@ -88,4 +99,3 @@ def change_position(start_position, angle, speed, direction):
             x_speed = int(-speed * math.sin(math.radians(angle)))
             y_speed = int(-speed * math.cos(math.radians(angle)))
     return start_position[0] + x_speed, start_position[1] + y_speed
-
