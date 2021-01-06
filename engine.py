@@ -1,3 +1,4 @@
+import os
 import pygame
 from enum import Enum, auto
 import math_operations
@@ -26,7 +27,7 @@ class CharacterSprite(pygame.sprite.GroupSingle):
         char_sprite = pygame.sprite.Sprite()
         char_sprite.rect = pygame.Rect(0, 0, 80, 80)
         char_sprite.image = pygame.transform.scale(
-            pygame.image.load(image_name),
+            pygame.image.load(os.path.join(constants.DATA_PATH, image_name)),
             char_sprite.rect.size)
         self.add(char_sprite)
 
