@@ -15,7 +15,7 @@ class Game:
         self._init_camera()
 
     def _init_screen(self):
-        self.screen = pygame.display.set_mode(constants.RESOLUTION)
+        self._screen = pygame.display.set_mode(constants.RESOLUTION)
         pygame.display.set_caption('XYgame')
 
     def _init_player(self):
@@ -35,11 +35,9 @@ class Game:
     def _main_loop(self):
         while self.running:
             self._process_events()
-            self.screen.fill('black')
-            # отрисовка
-            # обновление
+            self._update_camera()
+            self._render_screen()
             self.clock.tick(constants.FPS)
-            pygame.display.flip()
 
     def _process_events(self):
         for event in pygame.event.get():
@@ -61,6 +59,14 @@ class Game:
     def _terminate(self):
         pygame.quit()
         sys.exit()
+
+    def _update_camera(self):
+        pass
+
+    def _render_screen(self):
+        self._screen.fill(pygame.Color('Black'))
+        # self._field.draw(self._screen)
+        pygame.display.flip()
 
 
 if __name__ == '__main__':
