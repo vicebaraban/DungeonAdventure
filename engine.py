@@ -1,8 +1,8 @@
-import os
 import pygame
 from enum import Enum, auto
 import math_operations
 import constants
+import loading
 
 
 class MoveDirection(Enum):
@@ -26,9 +26,8 @@ class CharacterSprite(pygame.sprite.GroupSingle):
         super().__init__()
         char_sprite = pygame.sprite.Sprite()
         char_sprite.rect = pygame.Rect(0, 0, 80, 80)
-        char_sprite.image = pygame.transform.scale(
-            pygame.image.load(os.path.join(constants.DATA_PATH, image_name)),
-            char_sprite.rect.size)
+        char_sprite.image = pygame.transform.scale(loading.load_image(image_name),
+                                                   char_sprite.rect.size)
         self.add(char_sprite)
 
 
