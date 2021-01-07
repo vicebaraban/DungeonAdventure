@@ -8,8 +8,10 @@ _all_sprites = pygame.sprite.Group()
 _tile_sprites = pygame.sprite.Group()
 _impenetrable = pygame.sprite.Group()
 _player_sprites = pygame.sprite.Group()
+_equipped_item_sprites = pygame.sprite.Group()
 _bullet_sprites = pygame.sprite.Group()
 _item_sprites = pygame.sprite.Group()
+_character_sprites = pygame.sprite.Group()
 
 
 class MoveDirection(Enum):
@@ -38,24 +40,29 @@ class Sprite(pygame.sprite.Sprite):
 
 class Character:
     def __init__(self, sprite_type, pos, *groups):
-        self._sprite = Sprite(sprite_type, pos, groups)
-        self.position = self.x, self.y = pos
+        self._sprite = Sprite(sprite_type, pos, _character_sprites, *groups)
+        self.pos = self.x, self.y = pos
         self.angle = 0
         self.inventory = ['']
         self.equipped = ''
 
     def look(self, target_pos):
-        self.angle = math_operations.calculate_angle(*self.position, *target_pos)
+        self.angle = math_operations.calculate_angle(*self.pos, *target_pos)
 
     def get_pos(self):
-        return self.position
+        return self.pos
 
     def get_angle(self):
         return self.angle
 
-    def change_equipped_item(self):
-        self.equipped = self.inventory[(self.inventory.index(self.equipped) + 1) %
+    def change_equipped_item(self, event):
+        if isinstance(self.equipped, Item):
+            _equipped_item_sprites.remove(self.equipped._sprite)
+        self.equipped = self.inventory[(self.inventory.index(self.equipped) +
+                                        (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
                                        len(self.inventory)]
+        if isinstance(self.equipped, Item):
+            _equipped_item_sprites.add(self.equipped._sprite)
 
     def attack(self, target):
         if self.equipped and isinstance(self.equipped, Weapon):
@@ -67,10 +74,14 @@ class Character:
     def move(self, direction: MoveDirection):
         pass
 
+    def update_pos(self):
+        self.pos = self._sprite.rect.x / data.tile_width, self._sprite.rect.y / data.tile_height
+
 
 class Player(Character):
     def __init__(self, pos):
         super().__init__('player', pos, _player_sprites)
+        self.inventory = ['', RangeWeapon('bow', self.pos), MeleeWeapon('sword', self.pos)]
 
     def pick(self):
         pass
@@ -86,6 +97,23 @@ class Player(Character):
 
     def reload(self):
         pass
+
+    def move(self, event):
+        if event.key == pygame.K_w:
+            self._sprite.vy -= data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
+        if event.key == pygame.K_a:
+            self._sprite.vx -= data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
+        if event.key == pygame.K_s:
+            self._sprite.vy += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
+        if event.key == pygame.K_d:
+            self._sprite.vx += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
+
+    def update_pos(self):
+        self.pos = self.x, self.y = self._sprite.rect.x / data.tile_width,\
+                                    self._sprite.rect.y / data.tile_height
+        for item in self.inventory:
+            if isinstance(item, Item):
+                item.update_pos(self.x, self.y)
 
 
 class NPC(Character):
@@ -105,6 +133,10 @@ class Item:
 
     def select(self):
         pass
+
+    def update_pos(self, x, y):
+        print(x, y)
+        self._sprite.rect = self._sprite.image.get_rect().move(x * data.tile_width, y * data.tile_height)
 
 
 class Weapon(Item):

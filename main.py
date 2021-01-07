@@ -44,24 +44,18 @@ class Game:
         for event in self._events:
             if event.type == pygame.QUIT:
                 self._terminate()
-            if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT):
-                    self._move_events(event)
-            if event.type == pygame.KEYUP:
-                if event.key in (pygame.K_DOWN, pygame.K_UP, pygame.K_RIGHT, pygame.K_LEFT):
+            if event.type in (pygame.KEYUP, pygame.KEYDOWN):
+                if event.key in (pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d):
                     self._move_events(event)
             if event.type == pygame.MOUSEBUTTONDOWN:
-                self._attack_events(event)
+                if event.button in (pygame.BUTTON_WHEELDOWN, pygame.BUTTON_WHEELUP):
+                    self._character.change_equipped_item(event)
+                # self._attack_events(event)
+        self._character.update_pos()
 
     def _move_events(self, event):
-        if event.key == pygame.K_RIGHT:
-            self._character._sprite.vx += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
-        if event.key == pygame.K_LEFT:
-            self._character._sprite.vx -= data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
-        if event.key == pygame.K_UP:
-            self._character._sprite.vy -= data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
-        if event.key == pygame.K_DOWN:
-            self._character._sprite.vy += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
+
+        self._character.move(event)
 
     def _attack_events(self, event):
         if event.button == 1:
@@ -76,7 +70,9 @@ class Game:
 
     def _render_screen(self):
         self._screen.fill(pygame.Color('Black'))
-        engine._all_sprites.draw(self._screen)
+        # engine._all_sprites.draw(self._screen)
+        engine._character_sprites.draw(self._screen)
+        engine._equipped_item_sprites.draw(self._screen)
         engine._all_sprites.update(self._events)
         pygame.display.flip()
 
