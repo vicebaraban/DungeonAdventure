@@ -28,12 +28,16 @@ def calculate_angle(x1, y1, x2, y2):
     elif quarter == 1:
         angle = math.degrees(math.atan(len_x / len_y))
     elif quarter == 2:
-        angle = 270 - math.degrees(math.atan(len_x / len_y))
+        angle = 270 - math.degrees(math.atan(len_y / len_x))
     elif quarter == 3:
         angle = 180 + math.degrees(math.atan(len_x / len_y))
     else:
-        angle = 90 - math.degrees(math.atan(len_x / len_y))
+        angle = 90 - math.degrees(math.atan(len_y / len_x))
     return angle
+
+
+def hypotenuse(x1, y1, x2, y2):
+    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
 def convert_angle(angle):
@@ -51,14 +55,14 @@ def change_position(angle, speed, direction):
             x_speed = speed * math.sin(math.radians(angle))
             y_speed = -speed * math.cos(math.radians(angle))
         elif magic_number == 4:
-            x_speed = -speed * math.sin(math.radians(angle))
-            y_speed = -speed * math.cos(math.radians(angle))
+            x_speed = -speed * math.cos(math.radians(angle))
+            y_speed = -speed * math.sin(math.radians(angle))
         elif magic_number == 3:
             x_speed = -speed * math.sin(math.radians(angle))
             y_speed = speed * math.cos(math.radians(angle))
         else:
-            x_speed = speed * math.sin(math.radians(angle))
-            y_speed = speed * math.cos(math.radians(angle))
+            x_speed = speed * math.cos(math.radians(angle))
+            y_speed = speed * math.sin(math.radians(angle))
     # elif direction == 2:
     #     if magic_number == 1:
     #         x_speed = int(-speed * math.sin(math.radians(angle)))
