@@ -12,4 +12,6 @@ BULLET_TIME = 10
 DATA_PATH = 'textures'
 tile_size = tile_width, tile_height = 50, 50
 
-images = {'player': pygame.transform.scale(load_image('character.png'), tile_size)}
+images = {'player': pygame.transform.scale(load_image('character.png'), tile_size),
+          'bullet': pygame.transform.scale(load_image('arrow.png'), (30, 8)),
+          'weapon': pygame.transform.scale(load_image('bow.png'), (10, 30))}

@@ -2,7 +2,6 @@ import pygame
 from enum import Enum, auto
 import math_operations
 import data
-import loading
 
 
 _all_sprites = pygame.sprite.Group()
@@ -25,15 +24,14 @@ class Sprite(pygame.sprite.Sprite):
         self.image = data.images[sprite_type]
         self.rect = self.image.get_rect().move(data.tile_size[0] * pos[0],
                                                data.tile_size[1] * pos[1])
-        self.vx, self.vy = 0, 0
 
-    def update(self, *args):
-        self.rect = self.rect.move(self.vx / data.FPS, 0)
+    def update(self, v, *events):
+        self.rect = self.rect.move(v[0] / data.FPS, 0)
         if pygame.sprite.spritecollideany(self, _impenetrable):
-            self.rect = self.rect.move(self.vx / abs(self.vx) * -2 if self.vx else 0, 0)
-        self.rect = self.rect.move(0, self.vy / data.FPS)
+            self.rect = self.rect.move(v[0] / abs(v[0]) * -2 if v[0] else 0, 0)
+        self.rect = self.rect.move(0, v[1] / data.FPS)
         if pygame.sprite.spritecollideany(self, _impenetrable):
-            self.rect = self.rect.move(0, self.vy / abs(self.vy) * -2 if self.vy else 0)
+            self.rect = self.rect.move(0, v[1] / abs(v[1]) * -2 if v[1] else 0)
 
 
 class Character:
@@ -67,9 +65,7 @@ class Character:
         weapon = self._select_weapon(mode)
         if weapon is not None:
             if weapon == 'pistol':
-                bullet = Bullet(*self.position, ...)
-                _all_sprites.add(bullet)
-                _bullets.add(bullet)
+                bullet = Bullet('bullet', self.position, (_bullets))
 
 
 class Player(Character):
@@ -91,33 +87,52 @@ class Player(Character):
     def move(self, direction: MoveDirection): # возможно стоит перенести в Character
         pass # из main перенести операции сюда
 
+    def pick(self):
+        pass
+
 
 class NPC(Character):
     pass
 
 
 class Item:
-    pass
-
-
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, x, y, sprite_type, pos, groups):
-        pygame.sprite.Sprite.__init__(self)
+    def __init__(self, sprite_type, pos, *groups):
         self._sprite = Sprite(sprite_type, pos, groups)
-        self._start_position = x, y
-        self._time = data.BULLET_TIME
-        self._speed = data.BULLET_SPEED
+        self.position = self.x, self.y = pos
 
-    def draw(self):
-        # self._sprite.move(...) используя данные f change_position(.., direction=1)
+    def use(self):
         pass
 
-    def update(self): # аналогично с Character
-        self.draw()
+    def drop(self):
+        pass
+
+    def select(self):
+        pass
 
 
 class Weapon(Item):
-    pass
+    def attack(self):
+        pass
+
+
+class RangeWeapon(Weapon):
+    def shoot(self):
+        pass
+
+    def reload(self):
+        pass
+
+
+class MeleeWeapon(Weapon):
+    def hit(self):
+        pass
+
+
+class Bullet:
+    def __init__(self, sprite_type, pos, *groups):
+        self._sprite = Sprite(sprite_type, pos, groups)
+        self.position = self.x, self.y = pos
+        self.angle = 0
 
 
 class Menu:

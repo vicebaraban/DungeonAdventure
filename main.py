@@ -57,9 +57,9 @@ class Game:
         if event.key == pygame.K_RIGHT:
             self._character._sprite.vx += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
         if event.key == pygame.K_LEFT:
-            self._character._sprite.vx += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
+            self._character._sprite.vx -= data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
         if event.key == pygame.K_UP:
-            self._character._sprite.vy += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
+            self._character._sprite.vy -= data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
         if event.key == pygame.K_DOWN:
             self._character._sprite.vy += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
 
@@ -67,18 +67,18 @@ class Game:
         if event.button == 1:
             self._character.attack(1)
 
-        def _terminate(self):
-            pygame.quit()
-            sys.exit()
+    def _terminate(self):
+        pygame.quit()
+        sys.exit()
 
-        def _update_camera(self):
-            pass
+    def _update_camera(self):
+        pass
 
-        def _render_screen(self):
-            self._screen.fill(pygame.Color('Black'))
-            engine._all_sprites.draw(self._screen)
-            engine._all_sprites.update(self._events)
-            pygame.display.flip()
+    def _render_screen(self):
+        self._screen.fill(pygame.Color('Black'))
+        engine._all_sprites.draw(self._screen)
+        engine._all_sprites.update(self._events)
+        pygame.display.flip()
 
 
 if __name__ == '__main__':
