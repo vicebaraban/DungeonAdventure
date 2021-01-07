@@ -38,6 +38,15 @@ class Sprite(pygame.sprite.Sprite):
             self.rect = self.rect.move(0, self.vy / abs(self.vy) * -2 if self.vy else 0)
 
 
+class BulletSprite(Sprite):
+    def __init__(self, v, sprite_type, pos, *groups):
+        super().__init__(sprite_type, pos, *groups)
+        self.vx, self.vy = v
+
+    def update(self, *events):
+        self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
+
+
 class Character:
     def __init__(self, sprite_type, pos, *groups):
         self._sprite = Sprite(sprite_type, pos, _character_sprites, *groups)
@@ -64,12 +73,13 @@ class Character:
         if isinstance(self.equipped, Item):
             _equipped_item_sprites.add(self.equipped._sprite)
 
-    def attack(self, target):
+    def attack(self):
         if self.equipped and isinstance(self.equipped, Weapon):
             if isinstance(self.equipped, RangeWeapon):
-                self.equipped.shoot(...)
+                self.equipped.shoot()
             elif isinstance(self.equipped, MeleeWeapon):
-                self.equipped.hit(...)
+                pass
+                # self.equipped.hit(...)
 
     def move(self, direction: MoveDirection):
         pass
@@ -81,7 +91,8 @@ class Character:
 class Player(Character):
     def __init__(self, pos):
         super().__init__('player', pos, _player_sprites)
-        self.inventory = ['', RangeWeapon('bow', self.pos), MeleeWeapon('sword', self.pos)]
+        self.inventory = ['', RangeWeapon('bow', self.pos),
+                          MeleeWeapon('sword', self.pos)]
 
     def pick(self):
         pass
@@ -113,7 +124,7 @@ class Player(Character):
                                     self._sprite.rect.y / data.tile_height
         for item in self.inventory:
             if isinstance(item, Item):
-                item.update_pos(self.x, self.y)
+                item.update_pos(self.x + 35 / data.tile_width, self.y + 5 / data.tile_height)
 
 
 class NPC(Character):
@@ -123,7 +134,7 @@ class NPC(Character):
 class Item:
     def __init__(self, sprite_type, pos):
         self._sprite = Sprite(sprite_type, pos, _item_sprites)
-        self.position = self.x, self.y = pos
+        self.pos = self.x, self.y = pos
 
     def use(self):
         pass
@@ -135,8 +146,8 @@ class Item:
         pass
 
     def update_pos(self, x, y):
-        print(x, y)
         self._sprite.rect = self._sprite.image.get_rect().move(x * data.tile_width, y * data.tile_height)
+        self.pos = self.x, self.y = self._sprite.rect.x / data.tile_width, self._sprite.rect.y / data.tile_height
 
 
 class Weapon(Item):
@@ -146,7 +157,7 @@ class Weapon(Item):
 
 class RangeWeapon(Weapon):
     def shoot(self):
-        pass
+        Bullet('arrow', (self.x - 3 / data.tile_width, self.y + 11 / data.tile_height))
 
     def reload(self):
         pass
@@ -159,9 +170,16 @@ class MeleeWeapon(Weapon):
 
 class Bullet:
     def __init__(self, sprite_type, pos):
-        self._sprite = Sprite(sprite_type, pos, _bullet_sprites)
-        self.position = self.x, self.y = pos
+        self._sprite = BulletSprite(math_operations.change_position(
+            math_operations.calculate_angle(pos[0] * data.tile_width, pos[1] * data.tile_height, *pygame.mouse.get_pos()),
+            data.BULLET_SPEED, 1), sprite_type, pos, _bullet_sprites)
+        self.pos = self.x, self.y = pos
         self.angle = 0
+
+    def update_pos(self, x, y):
+        self._sprite.rect = self._sprite.image.get_rect().move(
+            x * data.tile_width, y * data.tile_height)
+        self.pos = self.x, self.y = self._sprite.rect.x / data.tile_width, self._sprite.rect.y / data.tile_height
 
 
 class Menu:

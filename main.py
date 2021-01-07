@@ -50,7 +50,7 @@ class Game:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button in (pygame.BUTTON_WHEELDOWN, pygame.BUTTON_WHEELUP):
                     self._character.change_equipped_item(event)
-                # self._attack_events(event)
+                self._attack_events(event)
         self._character.update_pos()
 
     def _move_events(self, event):
@@ -58,8 +58,8 @@ class Game:
         self._character.move(event)
 
     def _attack_events(self, event):
-        if event.button == 1:
-            self._character.attack(1)
+        if event.button == pygame.BUTTON_LEFT:
+            self._character.attack()
 
     def _terminate(self):
         pygame.quit()
@@ -73,6 +73,7 @@ class Game:
         # engine._all_sprites.draw(self._screen)
         engine._character_sprites.draw(self._screen)
         engine._equipped_item_sprites.draw(self._screen)
+        engine._bullet_sprites.draw(self._screen)
         engine._all_sprites.update(self._events)
         pygame.display.flip()
 

@@ -26,13 +26,13 @@ def calculate_angle(x1, y1, x2, y2):
         else:
             angle = 0
     elif quarter == 1:
-        angle = int(math.degrees(math.atan(len_x / len_y)))
+        angle = math.degrees(math.atan(len_x / len_y))
     elif quarter == 2:
-        angle = 270 - int(math.degrees(math.atan(len_x / len_y)))
+        angle = 270 - math.degrees(math.atan(len_x / len_y))
     elif quarter == 3:
-        angle = 180 + int(math.degrees(math.atan(len_x / len_y)))
+        angle = 180 + math.degrees(math.atan(len_x / len_y))
     else:
-        angle = 90 - int(math.degrees(math.atan(len_x / len_y)))
+        angle = 90 - math.degrees(math.atan(len_x / len_y))
     return angle
 
 
@@ -44,58 +44,58 @@ def convert_angle(angle):
     return angle, magic_number
 
 
-def change_position(start_position, angle, speed, direction):
+def change_position(angle, speed, direction):
     angle, magic_number = convert_angle(angle)
     if direction == 1:
         if magic_number == 1:
-            x_speed = int(speed * math.sin(math.radians(angle)))
-            y_speed = int(speed * math.cos(math.radians(angle)))
+            x_speed = speed * math.sin(math.radians(angle))
+            y_speed = -speed * math.cos(math.radians(angle))
         elif magic_number == 4:
-            x_speed = int(-speed * math.cos(math.radians(angle)))
-            y_speed = int(speed * math.sin(math.radians(angle)))
+            x_speed = -speed * math.sin(math.radians(angle))
+            y_speed = -speed * math.cos(math.radians(angle))
         elif magic_number == 3:
-            x_speed = int(-speed * math.sin(math.radians(angle)))
-            y_speed = int(-speed * math.cos(math.radians(angle)))
+            x_speed = -speed * math.sin(math.radians(angle))
+            y_speed = speed * math.cos(math.radians(angle))
         else:
-            x_speed = int(speed * math.cos(math.radians(angle)))
-            y_speed = int(-speed * math.sin(math.radians(angle)))
-    elif direction == 2:
-        if magic_number == 1:
-            x_speed = int(-speed * math.sin(math.radians(angle)))
-            y_speed = int(-speed * math.cos(math.radians(angle)))
-        elif magic_number == 4:
-            x_speed = int(speed * math.cos(math.radians(angle)))
-            y_speed = int(-speed * math.sin(math.radians(angle)))
-        elif magic_number == 3:
-            x_speed = int(speed * math.sin(math.radians(angle)))
-            y_speed = int(speed * math.cos(math.radians(angle)))
-        else:
-            x_speed = int(-speed * math.cos(math.radians(angle)))
-            y_speed = int(speed * math.sin(math.radians(angle)))
-    elif direction == 3:
-        if magic_number == 1:
-            x_speed = int(-speed * math.sin(math.radians(90 - angle)))
-            y_speed = int(speed * math.cos(math.radians(90 - angle)))
-        elif magic_number == 4:
-            x_speed = int(-speed * math.cos(math.radians(90 - angle)))
-            y_speed = int(-speed * math.sin(math.radians(90 - angle)))
-        elif magic_number == 3:
-            x_speed = int(-speed * math.sin(math.radians(90 - angle)))
-            y_speed = int(-speed * math.cos(math.radians(90 - angle)))
-        else:
-            x_speed = int(speed * math.sin(math.radians(90 - angle)))
-            y_speed = int(speed * math.cos(math.radians(90 - angle)))
-    else:
-        if magic_number == 1:
-            x_speed = int(speed * math.cos(math.radians(angle)))
-            y_speed = int(-speed * math.sin(math.radians(angle)))
-        elif magic_number == 4:
-            x_speed = int(speed * math.sin(math.radians(angle)))
-            y_speed = int(-speed * math.cos(math.radians(angle)))
-        elif magic_number == 3:
-            x_speed = int(-speed * math.cos(math.radians(angle)))
-            y_speed = int(-speed * math.sin(math.radians(angle)))
-        else:
-            x_speed = int(-speed * math.sin(math.radians(angle)))
-            y_speed = int(-speed * math.cos(math.radians(angle)))
-    return start_position[0] + x_speed, start_position[1] + y_speed
+            x_speed = speed * math.sin(math.radians(angle))
+            y_speed = speed * math.cos(math.radians(angle))
+    # elif direction == 2:
+    #     if magic_number == 1:
+    #         x_speed = int(-speed * math.sin(math.radians(angle)))
+    #         y_speed = int(-speed * math.cos(math.radians(angle)))
+    #     elif magic_number == 4:
+    #         x_speed = int(speed * math.cos(math.radians(angle)))
+    #         y_speed = int(-speed * math.sin(math.radians(angle)))
+    #     elif magic_number == 3:
+    #         x_speed = int(speed * math.sin(math.radians(angle)))
+    #         y_speed = int(speed * math.cos(math.radians(angle)))
+    #     else:
+    #         x_speed = int(-speed * math.cos(math.radians(angle)))
+    #         y_speed = int(speed * math.sin(math.radians(angle)))
+    # elif direction == 3:
+    #     if magic_number == 1:
+    #         x_speed = int(-speed * math.sin(math.radians(90 - angle)))
+    #         y_speed = int(speed * math.cos(math.radians(90 - angle)))
+    #     elif magic_number == 4:
+    #         x_speed = int(-speed * math.cos(math.radians(90 - angle)))
+    #         y_speed = int(-speed * math.sin(math.radians(90 - angle)))
+    #     elif magic_number == 3:
+    #         x_speed = int(-speed * math.sin(math.radians(90 - angle)))
+    #         y_speed = int(-speed * math.cos(math.radians(90 - angle)))
+    #     else:
+    #         x_speed = int(speed * math.sin(math.radians(90 - angle)))
+    #         y_speed = int(speed * math.cos(math.radians(90 - angle)))
+    # else:
+    #     if magic_number == 1:
+    #         x_speed = int(speed * math.cos(math.radians(angle)))
+    #         y_speed = int(-speed * math.sin(math.radians(angle)))
+    #     elif magic_number == 4:
+    #         x_speed = int(speed * math.sin(math.radians(angle)))
+    #         y_speed = int(-speed * math.cos(math.radians(angle)))
+    #     elif magic_number == 3:
+    #         x_speed = int(-speed * math.cos(math.radians(angle)))
+    #         y_speed = int(-speed * math.sin(math.radians(angle)))
+    #     else:
+    #         x_speed = int(-speed * math.sin(math.radians(angle)))
+    #         y_speed = int(-speed * math.cos(math.radians(angle)))
+    return x_speed, y_speed

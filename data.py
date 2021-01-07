@@ -7,7 +7,7 @@ FPS = 60
 RESOLUTION = WIDTH, HEIGHT = 800, 600
 MAIN_CHAR_SPEED = 150
 NPC_SPEED = 120
-BULLET_SPEED = 350
+BULLET_SPEED = 500
 BULLET_TIME = 10
 DATA_PATH = 'textures'
 tile_size = tile_width, tile_height = 50, 50
