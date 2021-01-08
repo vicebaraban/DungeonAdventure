@@ -20,7 +20,6 @@ class Game:
         self.quit_button = engine.Button('button', (5, 7), engine._button_sprites)
 
     def _init_playing(self):
-        self._init_player()
         self._init_game_map()
 
     def _init_pause_menu(self):
@@ -32,14 +31,12 @@ class Game:
         self._screen = pygame.display.set_mode(data.RESOLUTION)
         pygame.display.set_caption('XYgame')
 
-    def _init_player(self):
-        self._character = engine.Player((5, 5))
-
     def _init_game_map(self):
-        pass
+        self._game_map = engine.GameMap('map1.txt')
+        self._character = engine.Player(self._game_map.start_pos)
 
     def _init_camera(self):
-        pass
+        self.camera = engine.Camera()
 
     def _main_menu_process_events(self, events):
         for event in events:
@@ -86,7 +83,6 @@ class Game:
 
     def _main_loop(self):
         self._process_events()
-        self._update_camera()
         self._render_screen()
         self.clock.tick(data.FPS)
 
@@ -111,22 +107,24 @@ class Game:
         sys.exit()
 
     def _update_camera(self):
-        pass
+        self.camera.update(self._character._sprite)
+        for sprite in engine._all_sprites:
+            self.camera.apply(sprite)
 
     def _render_main_menu(self):
-        self._screen.fill(pygame.Color('Blue'))
+        self._screen.fill('blue')
         engine._button_sprites.draw(self._screen)
 
     def _render_playing(self):
-        self._screen.fill(pygame.Color('Black'))
-        # engine._all_sprites.draw(self._screen)
-        engine._character_sprites.draw(self._screen)
+        self._screen.fill('black')
+        self._update_camera()
+        self._game_map.draw(self._screen)
         engine._equipped_item_sprites.draw(self._screen)
         engine._bullet_sprites.draw(self._screen)
         engine._all_sprites.update(self._events)
 
     def _render_pause_menu(self):
-        self._screen.fill(pygame.Color('Green'))
+        self._screen.fill('green')
         engine._button_sprites.draw(self._screen)
 
     def _render_screen(self):

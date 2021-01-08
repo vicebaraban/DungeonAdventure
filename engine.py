@@ -1,7 +1,8 @@
 import pygame
 from enum import Enum, auto
-import math_operations
 import data
+import loading
+import math_operations
 
 
 _all_sprites = pygame.sprite.Group()
@@ -12,7 +13,7 @@ _equipped_item_sprites = pygame.sprite.Group()
 _bullet_sprites = pygame.sprite.Group()
 _item_sprites = pygame.sprite.Group()
 _character_sprites = pygame.sprite.Group()
-_npc_sprites = pygame.sprite.Group()
+_enemy_sprites = pygame.sprite.Group()
 _button_sprites = pygame.sprite.Group()
 
 
@@ -39,12 +40,7 @@ class Sprite(pygame.sprite.Sprite):
         self.vx, self.vy = 0, 0
 
     def update(self, *events):
-        self.rect = self.rect.move(self.vx / data.FPS, 0)
-        if pygame.sprite.spritecollideany(self, _impenetrable):
-            self.rect = self.rect.move(self.vx / abs(self.vx) * -2 if self.vx else 0, 0)
-        self.rect = self.rect.move(0, self.vy / data.FPS)
-        if pygame.sprite.spritecollideany(self, _impenetrable):
-            self.rect = self.rect.move(0, self.vy / abs(self.vy) * -2 if self.vy else 0)
+        self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
 
     def rotate(self, image, rect, angle):
         new_image = pygame.transform.rotate(image, angle)
@@ -59,6 +55,16 @@ class BulletSprite(Sprite):
 
     def update(self, *events):
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
+
+
+class CharacterSprite(Sprite):
+    def update(self, *events):
+        self.rect = self.rect.move(self.vx / data.FPS, 0)
+        if pygame.sprite.spritecollideany(self, _impenetrable):
+            self.rect = self.rect.move(self.vx / abs(self.vx) * -3 if self.vx else 0, 0)
+        self.rect = self.rect.move(0, self.vy / data.FPS)
+        if pygame.sprite.spritecollideany(self, _impenetrable):
+            self.rect = self.rect.move(0, self.vy / abs(self.vy) * -3 if self.vy else 0)
 
 
 class Button:
@@ -79,7 +85,7 @@ class Button:
 
 class Character:
     def __init__(self, sprite_type, pos, *groups):
-        self._sprite = Sprite(0, sprite_type, pos, _character_sprites, *groups)
+        self._sprite = CharacterSprite(0, sprite_type, pos, _character_sprites, *groups)
         self.pos = self.x, self.y = pos
         self.angle = 0
         self.inventory = ['']
@@ -119,7 +125,7 @@ class Player(Character):
     def attack(self):
         if self.equipped and isinstance(self.equipped, Weapon):
             if isinstance(self.equipped, RangeWeapon):
-                print(self.pos, pygame.mouse.get_pos())
+                # print(self.pos, pygame.mouse.get_pos())
                 self.equipped.shoot(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0] - 250, pygame.mouse.get_pos()[1] - 250))
             elif isinstance(self.equipped, MeleeWeapon):
                 pass
@@ -160,7 +166,7 @@ class Player(Character):
 
 class Enemy(Character):
     def __init__(self, pos):
-        super().__init__('enemy', pos, _npc_sprites)
+        super().__init__('enemy', pos, _enemy_sprites)
         self.position = pos
 
     def target_distance(self, pos):
@@ -217,5 +223,31 @@ class Bullet:
         self.pos = self.x, self.y = self._sprite.rect.x / data.tile_width, self._sprite.rect.y / data.tile_height
 
 
-class Map:
-    pass
+class Tile:
+    def __init__(self, sprite_type, pos, *groups):
+        self._sprite = Sprite(0, sprite_type, pos, _tile_sprites, *groups)
+        self.pos = self.x, self.y = pos
+
+
+class GameMap:
+    def __init__(self, level):
+        self._map = loading.load_level(level)
+        self.start_pos = loading.generate_level(self._map)
+
+    def draw(self, screen):
+        _tile_sprites.draw(screen)
+        _character_sprites.draw(screen)
+
+
+class Camera:
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - data.WIDTH // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - data.HEIGHT // 2)
