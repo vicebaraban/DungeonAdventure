@@ -55,6 +55,8 @@ class BulletSprite(Sprite):
 
     def update(self, *events):
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
+        if pygame.sprite.spritecollideany(self, _impenetrable):
+            self.kill()
 
 
 class CharacterSprite(Sprite):
