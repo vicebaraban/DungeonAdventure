@@ -41,11 +41,15 @@ def generate_level(level):
                 engine.Tile('floor', (x, y))
             elif level[y][x] == 'A':
                 engine.Tile('floor', (x, y))
+                engine.Door(True, (x, y))
                 start_pos = x, y
             elif level[y][x] == 'B':
                 engine.Tile('floor', (x, y))
-                # выход
+                engine.Door(False, (x, y))
             elif level[y][x] == '?':
                 engine.Tile('floor', (x, y))
-                # ключ?
+                engine.Key((x, y))
+            elif level[y][x] == '!':
+                engine.Tile('floor', (x, y))
+                engine.Enemy((x, y))
     return start_pos

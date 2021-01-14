@@ -15,7 +15,7 @@ class Game:
         self._init_main_menu()
 
     def _init_main_menu(self):
-        self._screen.fill(pygame.Color('Blue'))
+        self._screen.fill('blue')
         self.start_button = engine.Button('button', (5, 5), engine._button_sprites)
         self.quit_button = engine.Button('button', (5, 7), engine._button_sprites)
 
@@ -23,7 +23,7 @@ class Game:
         self._init_game_map()
 
     def _init_pause_menu(self):
-        self._screen.fill(pygame.Color('Green'))
+        self._screen.fill('green')
         self.back_game_button = engine.Button('button', (5, 5), engine._button_sprites)
         self.back_menu_button = engine.Button('button', (5, 7), engine._button_sprites)
 

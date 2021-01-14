@@ -19,4 +19,8 @@ images = {'player': pygame.transform.scale(loading.load_image('character.png'), 
           'button': pygame.transform.scale(loading.load_image('button.png'), (30, 30)),
           'empty': pygame.transform.scale(loading.load_image('empty.png'), tile_size),
           'wall': pygame.transform.scale(loading.load_image('wall.png'), tile_size),
-          'floor': pygame.transform.scale(loading.load_image('floor.png'), tile_size)}
+          'floor': pygame.transform.scale(loading.load_image('floor.png'), tile_size),
+          'enemy': pygame.transform.scale(loading.load_image('enemy.gif'), (tile_width - 5, tile_height - 5)),
+          'key': pygame.transform.scale(loading.load_image('key.png'), (40, 40)),
+          'door_closed': pygame.transform.scale(loading.load_image('door_closed.png'), tile_size),
+          'door_opened': pygame.transform.scale(loading.load_image('door_opened.png'), tile_size)}

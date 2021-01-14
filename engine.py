@@ -15,6 +15,8 @@ _item_sprites = pygame.sprite.Group()
 _character_sprites = pygame.sprite.Group()
 _enemy_sprites = pygame.sprite.Group()
 _button_sprites = pygame.sprite.Group()
+_map_items_sprites = pygame.sprite.Group()
+_door_sprites = pygame.sprite.Group()
 
 
 class MoveDirection(Enum):
@@ -38,6 +40,7 @@ class Sprite(pygame.sprite.Sprite):
                                                data.tile_size[1] * pos[1])
         self.image, self.rect = self.rotate(self.image, self.rect, -angle)
         self.vx, self.vy = 0, 0
+        self.durability = 20
 
     def update(self, *events):
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
@@ -67,6 +70,11 @@ class CharacterSprite(Sprite):
         self.rect = self.rect.move(0, self.vy / data.FPS)
         if pygame.sprite.spritecollideany(self, _impenetrable):
             self.rect = self.rect.move(0, self.vy / abs(self.vy) * -3 if self.vy else 0)
+        if pygame.sprite.spritecollideany(self, _bullet_sprites) and _enemy_sprites.has(self):
+            pygame.sprite.spritecollideany(self, _bullet_sprites).kill()
+            self.durability -= 7
+            if self.durability <= 0:
+                self.kill()
 
 
 class Button:
@@ -127,7 +135,6 @@ class Player(Character):
     def attack(self):
         if self.equipped and isinstance(self.equipped, Weapon):
             if isinstance(self.equipped, RangeWeapon):
-                # print(self.pos, pygame.mouse.get_pos())
                 self.equipped.shoot(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0] - 250, pygame.mouse.get_pos()[1] - 250))
             elif isinstance(self.equipped, MeleeWeapon):
                 pass
@@ -180,18 +187,15 @@ class Item:
         self._sprite = Sprite(0, sprite_type, pos, _item_sprites)
         self.pos = self.x, self.y = pos
 
-    def use(self):
-        pass
-
-    def drop(self):
-        pass
-
-    def select(self):
-        pass
-
     def update_pos(self, x, y):
         self._sprite.rect = self._sprite.image.get_rect().move(x * data.tile_width, y * data.tile_height)
         self.pos = self.x, self.y = self._sprite.rect.x / data.tile_width, self._sprite.rect.y / data.tile_height
+
+
+class Key(Item):
+    def __init__(self, pos):
+        self._sprite = Sprite(0, 'key', pos, _item_sprites, _map_items_sprites)
+        self.pos = self.x, self.y = pos
 
 
 class Weapon(Item):
@@ -231,6 +235,11 @@ class Tile:
         self.pos = self.x, self.y = pos
 
 
+class Door(Tile):
+    def __init__(self, is_open, pos, *groups):
+        super().__init__('door_opened' if is_open else 'door_closed', pos, *groups)
+
+
 class GameMap:
     def __init__(self, level):
         self._map = loading.load_level(level)
@@ -238,6 +247,7 @@ class GameMap:
 
     def draw(self, screen):
         _tile_sprites.draw(screen)
+        _map_items_sprites.draw(screen)
         _character_sprites.draw(screen)
 
 
