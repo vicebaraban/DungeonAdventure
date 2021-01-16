@@ -36,20 +36,20 @@ def generate_level(level):
             if level[y][x] == '.':
                 engine.Tile('empty', (x, y))
             elif level[y][x] == '#':
-                engine.Tile('wall', (x, y), engine._impenetrable)
+                engine.Tile('wall', (x, y), engine._tile_sprites, engine._impenetrable)
             elif level[y][x] == '_':
-                engine.Tile('floor', (x, y))
+                engine.Tile('floor', (x, y), engine._tile_sprites)
             elif level[y][x] == 'A':
-                engine.Tile('floor', (x, y))
-                engine.Door(True, (x, y))
+                engine.Tile('floor', (x, y), engine._tile_sprites)
+                engine.Door(True, (x, y), engine._tile_sprites, engine._door_sprites)
                 start_pos = x, y
             elif level[y][x] == 'B':
-                engine.Tile('floor', (x, y))
-                engine.Door(False, (x, y))
+                engine.Tile('floor', (x, y), engine._tile_sprites)
+                engine.Door(False, (x, y), engine._tile_sprites, engine._door_sprites)
             elif level[y][x] == '?':
-                engine.Tile('floor', (x, y))
-                engine.Key((x, y))
+                engine.Tile('floor', (x, y), engine._tile_sprites)
+                engine.Key((x, y), engine._tile_sprites, engine._map_items_sprites)
             elif level[y][x] == '!':
-                engine.Tile('floor', (x, y))
-                engine.Enemy((x, y))
+                engine.Tile('floor', (x, y), engine._tile_sprites)
+                engine.Enemy((x, y), engine._character_sprites, engine._enemy_sprites)
     return start_pos
