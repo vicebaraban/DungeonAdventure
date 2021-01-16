@@ -117,9 +117,9 @@ class Game:
         self._screen.fill('black')
         self._update_camera()
         self._game_map.draw(self._screen)
-        engine._equipped_item_sprites.draw(self._screen)
         engine._bullet_sprites.draw(self._screen)
         engine._character_sprites.draw(self._screen)
+        engine._equipped_item_sprites.draw(self._screen)
         engine._all_sprites.update(self._events)
 
     def _render_pause_menu(self):

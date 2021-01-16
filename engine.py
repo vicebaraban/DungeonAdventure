@@ -135,7 +135,7 @@ class Player(Character):
                                     self.rect.y / data.tile_height
         for item in self.inventory:
             if isinstance(item, Item):
-                item.update_pos(self.x + 35 / data.tile_width, self.y + 5 / data.tile_height)
+                item.update_pos(self.x + (self.rect.width - item.rect.width) // 2 / data.tile_width, self.y + 5 / data.tile_height)
 
 
 class Enemy(Character):
@@ -207,7 +207,7 @@ class Weapon(Item):
 
 class RangeWeapon(Weapon):
     def shoot(self, angle):
-        Bullet('arrow', (self.x - 3 / data.tile_width, self.y + 11 / data.tile_height), angle, _bullet_sprites)
+        Bullet('arrow', (self.x + 15 / data.tile_width, self.y + 11 / data.tile_height), angle, _bullet_sprites)
 
     def update(self, *events):
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
@@ -223,7 +223,6 @@ class MeleeWeapon(Weapon):
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
         angle = math_operations.calculate_angle(self.x * data.tile_width, self.y * data.tile_height,
                                                 *pygame.mouse.get_pos())
-        self.image, self.rect = self.rotate(self.orig_image, self.rect, angle)
         self.vx, self.vy = math_operations.change_position(angle, 20, 1)
         self.update_image(0 if self.pos[0] <= pygame.mouse.get_pos()[0] / 50 else 1)
 
