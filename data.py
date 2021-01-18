@@ -27,3 +27,7 @@ images = {'player': pygame.transform.scale(loading.load_image('character.png'), 
           'b_exit': pygame.transform.scale(loading.load_image('b_exit.png'), (100, 50)),
           'b_continue': pygame.transform.scale(loading.load_image('b_continue.png'), (100, 50)),
           'b_back_to_menu': pygame.transform.scale(loading.load_image('b_back_to_menu.png'), (100, 50))}
+
+pygame.mixer.init()
+main_menu_music = pygame.mixer.Sound('menu.mp3')
+playing_music = pygame.mixer.Sound('playing.mp3')
