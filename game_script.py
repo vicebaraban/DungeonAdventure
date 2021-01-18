@@ -17,10 +17,14 @@ class Game:
     def _init_main_menu(self):
         self.start_button = engine.Button('b_start_game', (5, 5), engine._menu_button_sprites)
         self.quit_button = engine.Button('b_exit', (5, 7), engine._menu_button_sprites)
+        pygame.mixer.pause()
+        data.main_menu_music.play(-1)
 
     def _init_playing(self):
         self._game_map = engine.GameMap('map1.txt')
         self._character = engine.Player(self._game_map.start_pos, engine._character_sprites, engine._player_sprites)
+        pygame.mixer.pause()
+        data.playing_music.play(-1)
 
     def _init_pause_menu(self):
         self.back_game_button = engine.Button('b_continue', (5, 5), engine._pause_button_sprites)
@@ -71,6 +75,7 @@ class Game:
                     self.back_menu_button.kill()
                 elif self.back_menu_button.is_clicked():
                     self.game_state = engine.GameState.MAIN_MENU
+                    engine._all_sprites.update(kill=True)
                     self._init_main_menu()
 
     def run(self):
