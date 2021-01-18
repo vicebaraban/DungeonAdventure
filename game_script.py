@@ -63,6 +63,8 @@ class Game:
                     self._character.change_equipped_item(event)
                 self._attack_events(event)
         self._character.update_pos()
+        for enemy in engine._enemy_sprites:
+            enemy.update_pos()
 
     def _pause_menu_process_events(self, events):
         for event in events:
@@ -97,6 +99,8 @@ class Game:
             self._playing_process_events(self._events)
         elif self.game_state == engine.GameState.PAUSE:
             self._pause_menu_process_events(self._events)
+        for enemy in engine._enemy_sprites:
+            enemy.move()
 
     def _move_events(self, event):
         self._character.move(event)

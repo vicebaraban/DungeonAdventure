@@ -26,6 +26,8 @@ _map_items_sprites = pygame.sprite.Group()
 _open_door_sprites = pygame.sprite.Group()
 _close_door_sprites = pygame.sprite.Group()
 
+PLAYER_POS = 0, 0
+
 
 class GameState(Enum):
     MAIN_MENU = auto()
@@ -77,7 +79,7 @@ class Creature(pygame.sprite.Sprite):
             else self.orig_image
 
     def update_pos(self):
-        self.pos = self.rect.x / data.tile_width, self.rect.y / data.tile_height
+        self.pos = self.x, self.y = self.rect.x / data.tile_width, self.rect.y / data.tile_height
 
     def change_equipped_item(self, event):
         if isinstance(self.equipped, Item):
@@ -137,8 +139,10 @@ class Player(Creature):
             self.vx += data.MAIN_CHAR_SPEED * (1 if event.type == pygame.KEYDOWN else -1)
 
     def update_pos(self):
+        global PLAYER_POS
         self.pos = self.x, self.y = self.rect.x / data.tile_width,\
                                     self.rect.y / data.tile_height
+        PLAYER_POS = self.pos[:]
         for item in self.weapon_inventory:
             if isinstance(item, Item):
                 item.update_pos(self.x + (self.rect.width - item.rect.width) // 2 /
@@ -167,6 +171,16 @@ class Enemy(Creature):
         if self.durability <= 0:
             self.kill()
 
+    def move(self):
+        if self.x < PLAYER_POS[0]:
+            self.vx = data.NPC_SPEED
+        if self.x > PLAYER_POS[0]:
+            self.vx = -data.NPC_SPEED
+        if self.y < PLAYER_POS[1]:
+            self.vy = data.NPC_SPEED
+        if self.y > PLAYER_POS[1]:
+            self.vy = -data.NPC_SPEED
+
     def target_distance(self, pos):
         return math_operations.hypotenuse(*self.pos, *pos)
 
@@ -194,15 +208,6 @@ class Item(pygame.sprite.Sprite):
         new_image = pygame.transform.rotate(image, -angle)
         rect = new_image.get_rect(center=rect.center)
         return new_image, rect
-
-    def use(self):
-        pass
-
-    def drop(self):
-        pass
-
-    def select(self):
-        pass
 
     def update_pos(self, x, y):
         self.rect = self.image.get_rect().move(x * data.tile_width, y * data.tile_height)
@@ -239,10 +244,6 @@ class MeleeWeapon(Weapon):
     def update(self, *events, kill=False):
         if kill:
             self.kill()
-        self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
-        angle = math_operations.calculate_angle(self.x * data.tile_width, self.y * data.tile_height,
-                                                *pygame.mouse.get_pos())
-        self.vx, self.vy = math_operations.change_position(angle, 20, 1)
         self.update_image(0 if self.pos[0] <= pygame.mouse.get_pos()[0] / 50 else 1)
 
     def update_image(self, direction):
