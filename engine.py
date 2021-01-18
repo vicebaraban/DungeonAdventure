@@ -8,16 +8,20 @@ import math_operations
 _all_sprites = pygame.sprite.Group()
 _tile_sprites = pygame.sprite.Group()
 _impenetrable = pygame.sprite.Group()
+
+_character_sprites = pygame.sprite.Group()
 _player_sprites = pygame.sprite.Group()
-_equipped_item_sprites = pygame.sprite.Group()
+_enemy_sprites = pygame.sprite.Group()
+
 _bullet_sprites = pygame.sprite.Group()
 _melee_hit = pygame.sprite.Group()
+
 _item_sprites = pygame.sprite.Group()
-_character_sprites = pygame.sprite.Group()
-_enemy_sprites = pygame.sprite.Group()
-_pause_button_sprites = pygame.sprite.Group()
-_menu_button_sprites = pygame.sprite.Group()
-_button_sprites = pygame.sprite.Group()
+_equipped_item_sprites = pygame.sprite.Group()
+
+_pause_sprites = pygame.sprite.Group()
+_menu_sprites = pygame.sprite.Group()
+
 _map_items_sprites = pygame.sprite.Group()
 _open_door_sprites = pygame.sprite.Group()
 _close_door_sprites = pygame.sprite.Group()
@@ -33,21 +37,17 @@ class GameState(Enum):
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, sprite_type, pos, *groups):
-        super().__init__(*groups)
-        self.x1 = pos[0]
-        self.y1 = pos[1]
-        self.x2 = pos[0] + 2
-        self.y2 = pos[1] + 1
+        super().__init__(_all_sprites, *groups)
+        self.x1, self.x2, self.y1, self.y2 = pos[0], pos[0] + 2, pos[1], pos[1] + 1
         self._init_sprite(sprite_type)
 
     def _init_sprite(self, sprite_type):
         self.image = data.images[sprite_type]
-        self.rect = self.image.get_rect().move(data.tile_size[0] * self.x1,
-                                               data.tile_size[1] * self.y1)
+        self.rect = self.image.get_rect().move(data.tile_width * self.x1, data.tile_height * self.y1)
 
     def is_clicked(self):
-        mouse_x = pygame.mouse.get_pos()[0] / 50
-        mouse_y = pygame.mouse.get_pos()[1] / 50
+        mouse_x = pygame.mouse.get_pos()[0] / data.tile_width
+        mouse_y = pygame.mouse.get_pos()[1] / data.tile_height
         if self.x1 <= mouse_x <= self.x2 and self.y1 <= mouse_y <= self.y2:
             return True
         return False
@@ -250,7 +250,6 @@ class MeleeWeapon(Weapon):
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
         angle = math_operations.calculate_angle(self.x * data.tile_width, self.y * data.tile_height,
                                                 *pygame.mouse.get_pos())
-        self.image, self.rect = self.rotate(self.orig_image, self.rect, angle)
         self.vx, self.vy = math_operations.change_position(angle, 20, 1)
         self.update_image(0 if self.pos[0] <= pygame.mouse.get_pos()[0] / 50 else 1)
 
