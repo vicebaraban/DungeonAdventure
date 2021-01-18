@@ -11,6 +11,7 @@ _impenetrable = pygame.sprite.Group()
 _player_sprites = pygame.sprite.Group()
 _equipped_item_sprites = pygame.sprite.Group()
 _bullet_sprites = pygame.sprite.Group()
+_melee_hit = pygame.sprite.Group()
 _item_sprites = pygame.sprite.Group()
 _character_sprites = pygame.sprite.Group()
 _enemy_sprites = pygame.sprite.Group()
@@ -18,18 +19,21 @@ _pause_button_sprites = pygame.sprite.Group()
 _menu_button_sprites = pygame.sprite.Group()
 _button_sprites = pygame.sprite.Group()
 _map_items_sprites = pygame.sprite.Group()
-_door_sprites = pygame.sprite.Group()
+_open_door_sprites = pygame.sprite.Group()
+_close_door_sprites = pygame.sprite.Group()
 
 
 class GameState(Enum):
     MAIN_MENU = auto()
     PLAYING = auto()
     PAUSE = auto()
+    WIN = auto()
+    LOSE = auto()
 
 
 class Button(pygame.sprite.Sprite):
     def __init__(self, sprite_type, pos, *groups):
-        super().__init__(_all_sprites, *groups)
+        super().__init__(*groups)
         self.x1 = pos[0]
         self.y1 = pos[1]
         self.x2 = pos[0] + 2
@@ -54,7 +58,7 @@ class Character(pygame.sprite.Sprite):
         super().__init__(_all_sprites, *groups)
         self.pos = self.x, self.y = pos
         self.angle = 0
-        self.inventory = ['']
+        self.weapon_inventory = ['']
         self.equipped = ''
         self._init_sprite(sprite_type)
 
@@ -64,9 +68,11 @@ class Character(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(data.tile_size[0] * self.x,
                                                data.tile_size[1] * self.y)
         self.vx, self.vy = 0, 0
-        self.durability = 20
+        self.durability = 34
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
         pass
 
     def update_image(self, direction):
@@ -84,9 +90,9 @@ class Character(pygame.sprite.Sprite):
     def change_equipped_item(self, event):
         if isinstance(self.equipped, Item):
             _equipped_item_sprites.remove(self.equipped)
-        self.equipped = self.inventory[(self.inventory.index(self.equipped) +
-                                        (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
-                                       len(self.inventory)]
+        self.equipped = self.weapon_inventory[(self.weapon_inventory.index(self.equipped) +
+                                               (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
+                                              len(self.weapon_inventory)]
         if isinstance(self.equipped, Item):
             _equipped_item_sprites.add(self.equipped)
 
@@ -94,10 +100,13 @@ class Character(pygame.sprite.Sprite):
 class Player(Character):
     def __init__(self, pos, *groups):
         super().__init__('player', pos, *groups)
-        self.inventory = ['', RangeWeapon('bow', self.pos, _item_sprites),
-                          MeleeWeapon('sword', self.pos, _item_sprites)]
+        self.weapon_inventory = ['', RangeWeapon('bow', self.pos, _item_sprites),
+                                 MeleeWeapon('sword', self.pos, _item_sprites)]
+        self.keys_inventory = 0
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
         self.update_image(0 if self.pos[0] <= pygame.mouse.get_pos()[0] / 50 else 1)
         self.rect = self.rect.move(self.vx / data.FPS, 0)
         if pygame.sprite.spritecollideany(self, _impenetrable):
@@ -110,6 +119,11 @@ class Player(Character):
             self.durability -= 7
             if self.durability <= 0:
                 self.kill()
+        if pygame.sprite.spritecollideany(self, _map_items_sprites) and _map_items_sprites.has(self):
+            pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
+            self.keys_inventory += 1
+        if pygame.sprite.spritecollideany(self, _close_door_sprites) and _close_door_sprites.has(self) and self.keys_inventory:
+            pass
 
     def attack(self):
         if self.equipped and isinstance(self.equipped, Weapon):
@@ -117,8 +131,8 @@ class Player(Character):
                 self.equipped.shoot(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
             elif isinstance(self.equipped, MeleeWeapon):
-                pass
-                # self.equipped.hit(...)
+                self.equipped.hit(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
+                                                                    / 50, pygame.mouse.get_pos()[1] / 50))
 
     def move(self, event):
         if event.key == pygame.K_w:
@@ -133,16 +147,19 @@ class Player(Character):
     def update_pos(self):
         self.pos = self.x, self.y = self.rect.x / data.tile_width,\
                                     self.rect.y / data.tile_height
-        for item in self.inventory:
+        for item in self.weapon_inventory:
             if isinstance(item, Item):
-                item.update_pos(self.x + (self.rect.width - item.rect.width) // 2 / data.tile_width, self.y + 5 / data.tile_height)
+                item.update_pos(self.x + (self.rect.width - item.rect.width) // 2 /
+                                data.tile_width, self.y + 5 / data.tile_height)
 
 
 class Enemy(Character):
     def __init__(self, pos, *groups):
         super().__init__('enemy', pos, *groups)
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, 0)
         if pygame.sprite.spritecollideany(self, _impenetrable):
             self.rect = self.rect.move(self.vx / abs(self.vx) * -3 if self.vx else 0, 0)
@@ -152,8 +169,11 @@ class Enemy(Character):
         if pygame.sprite.spritecollideany(self, _bullet_sprites) and _enemy_sprites.has(self):
             pygame.sprite.spritecollideany(self, _bullet_sprites).kill()
             self.durability -= 7
-            if self.durability <= 0:
-                self.kill()
+        if pygame.sprite.spritecollideany(self, _melee_hit) and _enemy_sprites.has(self):
+            pygame.sprite.spritecollideany(self, _melee_hit).kill()
+            self.durability -= 17
+        if self.durability <= 0:
+            self.kill()
 
     def target_distance(self, pos):
         return math_operations.hypotenuse(*self.pos, *pos)
@@ -173,7 +193,9 @@ class Item(pygame.sprite.Sprite):
         self.vx, self.vy = 0, 0
         self.durability = 20
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
 
     def rotate(self, image, rect, angle):
@@ -209,20 +231,26 @@ class RangeWeapon(Weapon):
     def shoot(self, angle):
         Bullet('arrow', (self.x + 15 / data.tile_width, self.y + 11 / data.tile_height), angle, _bullet_sprites)
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
         angle = math_operations.calculate_angle(self.x * data.tile_width, self.y * data.tile_height, *pygame.mouse.get_pos())
         self.image, self.rect = self.rotate(self.orig_image, self.rect, angle)
 
 
 class MeleeWeapon(Weapon):
-    def hit(self):
-        pass
+    def hit(self, look_target):
+        Bullet('arrow', (self.x + 15 / data.tile_width, self.y + 11 / data.tile_height),
+               look_target, _melee_hit, not_bullet=True)
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
         angle = math_operations.calculate_angle(self.x * data.tile_width, self.y * data.tile_height,
                                                 *pygame.mouse.get_pos())
+        self.image, self.rect = self.rotate(self.orig_image, self.rect, angle)
         self.vx, self.vy = math_operations.change_position(angle, 20, 1)
         self.update_image(0 if self.pos[0] <= pygame.mouse.get_pos()[0] / 50 else 1)
 
@@ -234,9 +262,10 @@ class MeleeWeapon(Weapon):
 
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, sprite_type, pos, angle, *groups):
+    def __init__(self, sprite_type, pos, angle, *groups, not_bullet=False):
         super().__init__(_all_sprites, *groups)
         self.pos = self.x, self.y = pos
+        self.is_not_bullet = not_bullet
         self.vx, self.vy = math_operations.change_position(math_operations.calculate_angle(pos[0] * data.tile_width,
                                                                                            pos[1] * data.tile_height,
                                                                                            *pygame.mouse.get_pos()),
@@ -249,11 +278,15 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(data.tile_size[0] * self.x,
                                                data.tile_size[1] * self.y)
         self.image, self.rect = self.rotate(self.image, self.rect, self.angle)
-        self.durability = 20
+        self.durability = 3
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
+        if self.is_not_bullet:
+            self.durability -= 1
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
-        if pygame.sprite.spritecollideany(self, _impenetrable):
+        if pygame.sprite.spritecollideany(self, _impenetrable) or self.durability <= 0:
             self.kill()
 
     def rotate(self, image, rect, angle):
@@ -274,7 +307,9 @@ class Tile(pygame.sprite.Sprite):
         self._init_sprite(sprite_type)
         self.vx, self.vy = 0, 0
 
-    def update(self, *events):
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
 
     def _init_sprite(self,sprite_type):
@@ -285,8 +320,8 @@ class Tile(pygame.sprite.Sprite):
 
 
 class Door(Tile):
-    def __init__(self, is_open, pos, *groups):
-        super().__init__('door_opened' if is_open else 'door_closed', pos, *groups)
+    def __init__(self, sprite_type, pos, *groups):
+        super().__init__(sprite_type, pos, *groups)
 
 
 class GameMap:
