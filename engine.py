@@ -8,23 +8,19 @@ import math_operations
 _all_sprites = pygame.sprite.Group()
 _tile_sprites = pygame.sprite.Group()
 _impenetrable = pygame.sprite.Group()
-
-_character_sprites = pygame.sprite.Group()
 _player_sprites = pygame.sprite.Group()
-_enemy_sprites = pygame.sprite.Group()
-
+_equipped_item_sprites = pygame.sprite.Group()
 _bullet_sprites = pygame.sprite.Group()
 _melee_hit = pygame.sprite.Group()
-
 _item_sprites = pygame.sprite.Group()
-_equipped_item_sprites = pygame.sprite.Group()
-
+_character_sprites = pygame.sprite.Group()
+_enemy_sprites = pygame.sprite.Group()
 _pause_sprites = pygame.sprite.Group()
 _menu_sprites = pygame.sprite.Group()
-
 _map_items_sprites = pygame.sprite.Group()
 _open_door_sprites = pygame.sprite.Group()
 _close_door_sprites = pygame.sprite.Group()
+
 
 PLAYER_POS = 0, 0
 
@@ -45,11 +41,11 @@ class Button(pygame.sprite.Sprite):
 
     def _init_sprite(self, sprite_type):
         self.image = data.images[sprite_type]
-        self.rect = self.image.get_rect().move(data.tile_width * self.x1, data.tile_height * self.y1)
+        self.rect = self.image.get_rect().move(data.TITLE_WIDTH * self.x1, data.TITLE_HEIGHT * self.y1)
 
     def is_clicked(self):
-        mouse_x = pygame.mouse.get_pos()[0] / data.tile_width
-        mouse_y = pygame.mouse.get_pos()[1] / data.tile_height
+        mouse_x = pygame.mouse.get_pos()[0] / data.TITLE_HEIGHT
+        mouse_y = pygame.mouse.get_pos()[1] / data.TITLE_WIDTH
         if self.x1 <= mouse_x <= self.x2 and self.y1 <= mouse_y <= self.y2:
             return True
         return False
@@ -60,33 +56,40 @@ class Creature(pygame.sprite.Sprite):
         super().__init__(_all_sprites, *groups)
         self.pos = self.x, self.y = pos
         self.angle = 0
-        self.weapon_inventory, self.equipped = [''], ''
+        self.weapon_inventory = ['']
+        self.equipped = ''
         self._init_sprite(sprite_type)
 
     def _init_sprite(self, sprite_type):
         self.orig_image = data.images[sprite_type]
         self.image = self.orig_image
-        self.rect = self.image.get_rect().move(data.tile_width * self.x, data.tile_height * self.y)
+        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
+                                               data.TITLE_SIZE[1] * self.y)
         self.vx, self.vy = 0, 0
-        self.durability = data.hp
+        self.durability = data.HP
+
+    def get_state(self):
+        return
 
     def update(self, *events, kill=False):
         if kill:
             self.kill()
 
-    def update_image(self, direction_changed):
-        self.image = pygame.transform.flip(self.orig_image, True, False) if direction_changed \
-            else self.orig_image
+    def update_image(self, direction):
+        if direction == 1:
+            self.image = pygame.transform.flip(self.orig_image, True, False)
+        else:
+            self.image = self.orig_image
 
     def update_pos(self):
-        self.pos = self.x, self.y = self.rect.x / data.tile_width, self.rect.y / data.tile_height
+        self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
 
     def change_equipped_item(self, event):
         if isinstance(self.equipped, Item):
             _equipped_item_sprites.remove(self.equipped)
-        self.equipped = self.weapon_inventory[
-            (self.weapon_inventory.index(self.equipped) +
-             (1 if event.button == pygame.BUTTON_WHEELUP else -1)) % len(self.weapon_inventory)]
+        self.equipped = self.weapon_inventory[(self.weapon_inventory.index(self.equipped) +
+                                               (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
+                                              len(self.weapon_inventory)]
         if isinstance(self.equipped, Item):
             _equipped_item_sprites.add(self.equipped)
 
@@ -97,10 +100,29 @@ class Player(Creature):
         self.weapon_inventory = ['', RangeWeapon('bow', self.pos, _item_sprites),
                                  MeleeWeapon('sword', self.pos, _item_sprites)]
         self.keys_inventory = 0
+        self.char_state = GameState.PLAYING
+        self.sword_cooldown = data.SWORD_COOLDOWN
+        self.bow_cooldown = data.BOW_COOLDOWN
+        self.close_hit_cooldown = data.CLOSE_HIT_COOLDOWN
+
+    def update_cooldowns(self):
+        if self.sword_cooldown >= data.SWORD_COOLDOWN:
+            self.sword_cooldown = 0
+        elif self.sword_cooldown != 0:
+            self.sword_cooldown += 1
+        if self.bow_cooldown >= data.BOW_COOLDOWN:
+            self.bow_cooldown = 0
+        elif self.bow_cooldown != 0:
+            self.bow_cooldown += 1
+        if self.close_hit_cooldown >= data.CLOSE_HIT_COOLDOWN:
+            self.close_hit_cooldown = 0
+        else:
+            self.close_hit_cooldown += 1
 
     def update(self, *events, kill=False):
         if kill:
             self.kill()
+        self.update_cooldowns()
         self.update_image(0 if self.pos[0] <= pygame.mouse.get_pos()[0] / 50 else 1)
         self.rect = self.rect.move(self.vx / data.FPS, 0)
         if pygame.sprite.spritecollideany(self, _impenetrable):
@@ -111,22 +133,31 @@ class Player(Creature):
         if pygame.sprite.spritecollideany(self, _bullet_sprites) and _enemy_sprites.has(self):
             pygame.sprite.spritecollideany(self, _bullet_sprites).kill()
             self.durability -= 7
-            if self.durability <= 0:
-                self.kill()
-        if pygame.sprite.spritecollideany(self, _map_items_sprites) and _map_items_sprites.has(self):
+        if pygame.sprite.spritecollideany(self, _map_items_sprites):
             pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
             self.keys_inventory += 1
-        if pygame.sprite.spritecollideany(self, _close_door_sprites) and _close_door_sprites.has(self) and self.keys_inventory:
-            pass
+            print(self.keys_inventory)
+        if pygame.sprite.spritecollideany(self, _close_door_sprites) and self.keys_inventory == 2:
+            self.char_state = GameState.WIN
+        if pygame.sprite.spritecollideany(self, _enemy_sprites) and self.close_hit_cooldown == 0:
+            self.durability -= 3
+            print(self.durability)
+        if self.durability <= 0:
+            self.char_state = GameState.LOSE
+
+    def get_state(self):
+        return self.char_state
 
     def attack(self):
         if self.equipped and isinstance(self.equipped, Weapon):
-            if isinstance(self.equipped, RangeWeapon):
+            if isinstance(self.equipped, RangeWeapon) and self.bow_cooldown == 0:
                 self.equipped.shoot(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
-            elif isinstance(self.equipped, MeleeWeapon):
+                self.bow_cooldown += 1
+            elif isinstance(self.equipped, MeleeWeapon) and self.sword_cooldown == 0:
                 self.equipped.hit(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
+                self.sword_cooldown += 1
 
     def move(self, event):
         if event.key == pygame.K_w:
@@ -140,13 +171,13 @@ class Player(Creature):
 
     def update_pos(self):
         global PLAYER_POS
-        self.pos = self.x, self.y = self.rect.x / data.tile_width,\
-                                    self.rect.y / data.tile_height
+        self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH,\
+                                    self.rect.y / data.TITLE_HEIGHT
         PLAYER_POS = self.pos[:]
         for item in self.weapon_inventory:
             if isinstance(item, Item):
                 item.update_pos(self.x + (self.rect.width - item.rect.width) // 2 /
-                                data.tile_width, self.y + 5 / data.tile_height)
+                                data.TITLE_WIDTH, self.y + 5 / data.TITLE_HEIGHT)
 
 
 class Enemy(Creature):
@@ -172,14 +203,15 @@ class Enemy(Creature):
             self.kill()
 
     def move(self):
-        if self.x < PLAYER_POS[0]:
-            self.vx = data.NPC_SPEED
-        if self.x > PLAYER_POS[0]:
-            self.vx = -data.NPC_SPEED
-        if self.y < PLAYER_POS[1]:
-            self.vy = data.NPC_SPEED
-        if self.y > PLAYER_POS[1]:
-            self.vy = -data.NPC_SPEED
+        if self.target_distance(PLAYER_POS) <= 3:
+            if self.x < PLAYER_POS[0]:
+                self.vx = data.NPC_SPEED
+            if self.x > PLAYER_POS[0]:
+                self.vx = -data.NPC_SPEED
+            if self.y < PLAYER_POS[1]:
+                self.vy = data.NPC_SPEED
+            if self.y > PLAYER_POS[1]:
+                self.vy = -data.NPC_SPEED
 
     def target_distance(self, pos):
         return math_operations.hypotenuse(*self.pos, *pos)
@@ -194,8 +226,8 @@ class Item(pygame.sprite.Sprite):
     def _init_sprite(self, sprite_type):
         self.orig_image = data.images[sprite_type]
         self.image = self.orig_image
-        self.rect = self.image.get_rect().move(data.tile_size[0] * self.x,
-                                               data.tile_size[1] * self.y)
+        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
+                                               data.TITLE_SIZE[1] * self.y)
         self.vx, self.vy = 0, 0
         self.durability = 20
 
@@ -209,9 +241,18 @@ class Item(pygame.sprite.Sprite):
         rect = new_image.get_rect(center=rect.center)
         return new_image, rect
 
+    def use(self):
+        pass
+
+    def drop(self):
+        pass
+
+    def select(self):
+        pass
+
     def update_pos(self, x, y):
-        self.rect = self.image.get_rect().move(x * data.tile_width, y * data.tile_height)
-        self.pos = self.x, self.y = self.rect.x / data.tile_width, self.rect.y / data.tile_height
+        self.rect = self.image.get_rect().move(x * data.TITLE_WIDTH, y * data.TITLE_HEIGHT)
+        self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
 
 
 class Key(Item):
@@ -226,19 +267,19 @@ class Weapon(Item):
 
 class RangeWeapon(Weapon):
     def shoot(self, angle):
-        Bullet('arrow', (self.x + 15 / data.tile_width, self.y + 11 / data.tile_height), angle, _bullet_sprites)
+        Bullet('arrow', (self.x + 15 / data.TITLE_WIDTH, self.y + 11 / data.TITLE_HEIGHT), angle, _bullet_sprites)
 
     def update(self, *events, kill=False):
         if kill:
             self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
-        angle = math_operations.calculate_angle(self.x * data.tile_width, self.y * data.tile_height, *pygame.mouse.get_pos())
+        angle = math_operations.calculate_angle(self.x * data.TITLE_WIDTH, self.y * data.TITLE_HEIGHT, *pygame.mouse.get_pos())
         self.image, self.rect = self.rotate(self.orig_image, self.rect, angle)
 
 
 class MeleeWeapon(Weapon):
     def hit(self, look_target):
-        Bullet('arrow', (self.x + 15 / data.tile_width, self.y + 11 / data.tile_height),
+        Bullet('arrow', (self.x + 15 / data.TITLE_WIDTH, self.y + 11 / data.TITLE_HEIGHT),
                look_target, _melee_hit, not_bullet=True)
 
     def update(self, *events, kill=False):
@@ -258,8 +299,8 @@ class Bullet(pygame.sprite.Sprite):
         super().__init__(_all_sprites, *groups)
         self.pos = self.x, self.y = pos
         self.is_not_bullet = not_bullet
-        self.vx, self.vy = math_operations.change_position(math_operations.calculate_angle(pos[0] * data.tile_width,
-                                                                                           pos[1] * data.tile_height,
+        self.vx, self.vy = math_operations.change_position(math_operations.calculate_angle(pos[0] * data.TITLE_WIDTH,
+                                                                                           pos[1] * data.TITLE_HEIGHT,
                                                                                            *pygame.mouse.get_pos()),
                                                            data.BULLET_SPEED, 1)
         self.angle = angle
@@ -267,8 +308,8 @@ class Bullet(pygame.sprite.Sprite):
 
     def _init_sprite(self, sprite_type):
         self.image = data.images[sprite_type]
-        self.rect = self.image.get_rect().move(data.tile_size[0] * self.x,
-                                               data.tile_size[1] * self.y)
+        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
+                                               data.TITLE_SIZE[1] * self.y)
         self.image, self.rect = self.rotate(self.image, self.rect, self.angle)
         self.durability = 3
 
@@ -288,8 +329,8 @@ class Bullet(pygame.sprite.Sprite):
 
     def update_pos(self, x, y):
         self.rect = self.image.get_rect().move(
-            x * data.tile_width, y * data.tile_height)
-        self.pos = self.x, self.y = self.rect.x / data.tile_width, self.rect.y / data.tile_height
+            x * data.TITLE_WIDTH, y * data.TITLE_HEIGHT)
+        self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
 
 
 class Tile(pygame.sprite.Sprite):
@@ -307,8 +348,8 @@ class Tile(pygame.sprite.Sprite):
     def _init_sprite(self,sprite_type):
         self.orig_image = data.images[sprite_type]
         self.image = self.orig_image
-        self.rect = self.image.get_rect().move(data.tile_size[0] * self.x,
-                                               data.tile_size[1] * self.y)
+        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
+                                               data.TITLE_SIZE[1] * self.y)
 
 
 class Door(Tile):
