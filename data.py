@@ -7,7 +7,7 @@ RESOLUTION = WIDTH, HEIGHT = 800, 600
 MAIN_CHAR_SPEED = 200
 NPC_SPEED = 120
 BULLET_SPEED = 500
-BULLET_TIME = 10
+hp = 34
 DATA_PATH = 'textures'
 MAP_PATH = 'maps'
 tile_size = tile_width, tile_height = 50, 50

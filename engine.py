@@ -53,51 +53,43 @@ class Button(pygame.sprite.Sprite):
         return False
 
 
-class Character(pygame.sprite.Sprite):
+class Creature(pygame.sprite.Sprite):
     def __init__(self, sprite_type, pos, *groups):
         super().__init__(_all_sprites, *groups)
         self.pos = self.x, self.y = pos
         self.angle = 0
-        self.weapon_inventory = ['']
-        self.equipped = ''
+        self.weapon_inventory, self.equipped = [''], ''
         self._init_sprite(sprite_type)
 
     def _init_sprite(self, sprite_type):
         self.orig_image = data.images[sprite_type]
         self.image = self.orig_image
-        self.rect = self.image.get_rect().move(data.tile_size[0] * self.x,
-                                               data.tile_size[1] * self.y)
+        self.rect = self.image.get_rect().move(data.tile_width * self.x, data.tile_height * self.y)
         self.vx, self.vy = 0, 0
-        self.durability = 34
+        self.durability = data.hp
 
     def update(self, *events, kill=False):
         if kill:
             self.kill()
-        pass
 
-    def update_image(self, direction):
-        if direction == 1:
-            self.image = pygame.transform.flip(self.orig_image, True, False)
-        else:
-            self.image = self.orig_image
+    def update_image(self, direction_changed):
+        self.image = pygame.transform.flip(self.orig_image, True, False) if direction_changed \
+            else self.orig_image
 
     def update_pos(self):
         self.pos = self.rect.x / data.tile_width, self.rect.y / data.tile_height
 
-    def look(self, target_pos):
-        self.angle = math_operations.calculate_angle(*self.pos, *target_pos)
-
     def change_equipped_item(self, event):
         if isinstance(self.equipped, Item):
             _equipped_item_sprites.remove(self.equipped)
-        self.equipped = self.weapon_inventory[(self.weapon_inventory.index(self.equipped) +
-                                               (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
-                                              len(self.weapon_inventory)]
+        self.equipped = self.weapon_inventory[
+            (self.weapon_inventory.index(self.equipped) +
+             (1 if event.button == pygame.BUTTON_WHEELUP else -1)) % len(self.weapon_inventory)]
         if isinstance(self.equipped, Item):
             _equipped_item_sprites.add(self.equipped)
 
 
-class Player(Character):
+class Player(Creature):
     def __init__(self, pos, *groups):
         super().__init__('player', pos, *groups)
         self.weapon_inventory = ['', RangeWeapon('bow', self.pos, _item_sprites),
@@ -153,7 +145,7 @@ class Player(Character):
                                 data.tile_width, self.y + 5 / data.tile_height)
 
 
-class Enemy(Character):
+class Enemy(Creature):
     def __init__(self, pos, *groups):
         super().__init__('enemy', pos, *groups)
 
