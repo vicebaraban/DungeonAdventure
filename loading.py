@@ -22,7 +22,7 @@ def load_image(name, color_key=None):
 
 
 def load_level(filename):
-    filename = data.MAP_PATH + '/' + filename
+    filename = os.path.join(data.MAP_PATH, filename)
     with open(filename, 'r') as mapFile:
         level_map = [line.strip() for line in mapFile]
     max_width = max(map(len, level_map))
