@@ -63,8 +63,7 @@ class Creature(pygame.sprite.Sprite):
     def _init_sprite(self, sprite_type):
         self.orig_image = data.images[sprite_type]
         self.image = self.orig_image
-        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
-                                               data.TITLE_SIZE[1] * self.y)
+        self.rect = self.image.get_rect().move(data.TITLE_WIDTH * self.x, data.TITLE_HEIGHT * self.y)
         self.vx, self.vy = 0, 0
         self.durability = data.HP
 
