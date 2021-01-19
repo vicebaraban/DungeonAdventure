@@ -137,7 +137,7 @@ class Player(Creature):
             pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
             self.keys_inventory += 1
             data.take_item_sound.play()
-            print(f'keys: {self.keys_inventory}')
+            print(self.keys_inventory)
         if pygame.sprite.spritecollideany(self, _close_door_sprites) and self.keys_inventory == 2:
             self.char_state = GameState.WIN
             pygame.mixer.pause()
@@ -145,7 +145,7 @@ class Player(Creature):
         if pygame.sprite.spritecollideany(self, _enemy_sprites) and self.close_hit_cooldown == 0:
             self.durability -= 3
             data.char_hit_sound.play()
-            print(f'hp: {self.durability}')
+            print(self.durability)
         if self.durability <= 0:
             self.char_state = GameState.LOSE
             pygame.mixer.pause()
