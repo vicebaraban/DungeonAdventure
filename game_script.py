@@ -11,6 +11,7 @@ class Game:
         self._init_screen()
         self._init_camera()
         self.clock = pygame.time.Clock()
+        pygame.mouse.set_visible(False)
         self.game_state = engine.GameState.MAIN_MENU
         self._init_main_menu()
 
@@ -161,6 +162,8 @@ class Game:
             self._render_final_menu(True)
         elif self.game_state == engine.GameState.LOSE:
             self._render_final_menu(False)
+        if pygame.mouse.get_focused():
+            self._screen.blit(data.images['cursor'], pygame.mouse.get_pos())
         pygame.display.flip()
 
     def run(self):
