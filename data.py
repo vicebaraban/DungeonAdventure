@@ -1,4 +1,3 @@
-import os
 import pygame
 import loading
 
@@ -14,7 +13,6 @@ SWORD_COOLDOWN = 60
 CLOSE_HIT_COOLDOWN = 35
 DATA_PATH = 'textures'
 MAP_PATH = 'maps'
-SOUND_PATH = 'sounds'
 TITLE_SIZE = TITLE_WIDTH, TITLE_HEIGHT = 50, 50
 
 images = {'player': pygame.transform.scale(loading.load_image('character.png'), (TITLE_WIDTH - 5, TITLE_HEIGHT - 5)),
@@ -35,16 +33,15 @@ images = {'player': pygame.transform.scale(loading.load_image('character.png'), 
           'menu_background': pygame.transform.scale(loading.load_image('menu_background.png'), (800, 600)),
           'pause_background': pygame.transform.scale(loading.load_image('pause_background.png'), (800, 600)),
           'victory_background': pygame.transform.scale(loading.load_image('victory_background.png'), (800, 600)),
-          'lose_background': pygame.transform.scale(loading.load_image('lose_background.png'), (800, 600)),
-          'cursor': pygame.transform.scale(loading.load_image('cursor.png'), (30, 30))}
+          'lose_background': pygame.transform.scale(loading.load_image('lose_background.png'), (800, 600))}
 
 pygame.mixer.init()
-main_menu_music = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'menu.ogg'))
-playing_music = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'playing.ogg'))
-victory_music = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'ivictory.ogg'))
-lose_music = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'lose.ogg'))
-bow_shoot_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'ibow_shoot.ogg'))
-sword_hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'sword_hit.ogg'))
-char_hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'char_hit.ogg'))
-enemy_hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'enemy_hit.ogg'))
-take_item_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'itake_item.ogg'))
+main_menu_music = pygame.mixer.Sound('sounds\menu.mp3')
+playing_music = pygame.mixer.Sound('sounds\playing.mp3')
+victory_music = pygame.mixer.Sound('sounds\ivictory.mp3')
+lose_music = pygame.mixer.Sound('sounds\lose.mp3')
+bow_shoot_sound = pygame.mixer.Sound('sounds\ibow_shoot.mp3')
+sword_hit_sound = pygame.mixer.Sound('sounds\sword_hit.mp3')
+char_hit_sound = pygame.mixer.Sound('sounds\char_hit.mp3')
+enemy_hit_sound = pygame.mixer.Sound('sounds\enemy_hit.mp3')
+take_item_sound = pygame.mixer.Sound('sounds\itake_item.mp3')
