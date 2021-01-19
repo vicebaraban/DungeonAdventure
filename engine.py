@@ -63,7 +63,8 @@ class Creature(pygame.sprite.Sprite):
     def _init_sprite(self, sprite_type):
         self.orig_image = data.images[sprite_type]
         self.image = self.orig_image
-        self.rect = self.image.get_rect().move(data.TITLE_WIDTH * self.x, data.TITLE_HEIGHT * self.y)
+        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
+                                               data.TITLE_SIZE[1] * self.y)
         self.vx, self.vy = 0, 0
         self.durability = data.HP
 
@@ -135,14 +136,20 @@ class Player(Creature):
         if pygame.sprite.spritecollideany(self, _map_items_sprites):
             pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
             self.keys_inventory += 1
+            data.take_item_sound.play()
             print(self.keys_inventory)
         if pygame.sprite.spritecollideany(self, _close_door_sprites) and self.keys_inventory == 2:
             self.char_state = GameState.WIN
+            pygame.mixer.pause()
+            data.victory_music.play()
         if pygame.sprite.spritecollideany(self, _enemy_sprites) and self.close_hit_cooldown == 0:
             self.durability -= 3
+            data.char_hit_sound.play()
             print(self.durability)
         if self.durability <= 0:
             self.char_state = GameState.LOSE
+            pygame.mixer.pause()
+            data.lose_music.play()
 
     def get_state(self):
         return self.char_state
@@ -153,10 +160,12 @@ class Player(Creature):
                 self.equipped.shoot(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
                 self.bow_cooldown += 1
+                data.bow_shoot_sound.play()
             elif isinstance(self.equipped, MeleeWeapon) and self.sword_cooldown == 0:
                 self.equipped.hit(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
                 self.sword_cooldown += 1
+                data.sword_hit_sound.play()
 
     def move(self, event):
         if event.key == pygame.K_w:
@@ -199,6 +208,7 @@ class Enemy(Creature):
             pygame.sprite.spritecollideany(self, _melee_hit).kill()
             self.durability -= 17
         if self.durability <= 0:
+            data.enemy_hit_sound.play()
             self.kill()
 
     def move(self):
