@@ -37,7 +37,7 @@ class Game:
 
     def _init_screen(self):
         self._screen = pygame.display.set_mode(data.RESOLUTION)
-        pygame.display.set_caption('XYgame')
+        pygame.display.set_caption('Dungeon Adventure')
 
     def _init_camera(self):
         self.camera = engine.Camera()
