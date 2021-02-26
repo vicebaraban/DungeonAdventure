@@ -148,8 +148,8 @@ class Player(Creature):
             print(self.durability)
         if self.durability <= 0:
             self.char_state = GameState.LOSE
-            pygame.mixer.pause()
-            data.lose_music.play()
+            data.playing_music.stop()
+            pygame.mixer.Channel(0).play(data.lose_music)
 
     def get_state(self):
         return self.char_state
@@ -179,8 +179,7 @@ class Player(Creature):
 
     def update_pos(self):
         global PLAYER_POS
-        self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH,\
-                                    self.rect.y / data.TITLE_HEIGHT
+        self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
         PLAYER_POS = self.pos[:]
         for item in self.weapon_inventory:
             if isinstance(item, Item):

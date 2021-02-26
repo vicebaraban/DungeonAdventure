@@ -19,14 +19,12 @@ class Game:
         engine._all_sprites.update(kill=True)
         self.start_button = engine.Button('b_start_game', (7, 6), engine._menu_sprites)
         self.quit_button = engine.Button('b_exit', (7, 8), engine._menu_sprites)
-        pygame.mixer.pause()
-        data.main_menu_music.play(-1)
+        pygame.mixer.Channel(0).play(data.main_menu_music, -1)
 
     def _init_playing(self):
         self._game_map = engine.GameMap('map1.txt')
         self._character = engine.Player(self._game_map.start_pos, engine._character_sprites, engine._player_sprites)
-        pygame.mixer.pause()
-        data.playing_music.play(-1)
+        pygame.mixer.Channel(0).play(data.playing_music, -1)
 
     def _init_pause_menu(self):
         self.back_game_button = engine.Button('b_continue', (7, 6), engine._pause_sprites)
