@@ -20,6 +20,7 @@ _menu_sprites = pygame.sprite.Group()
 _map_items_sprites = pygame.sprite.Group()
 _open_door_sprites = pygame.sprite.Group()
 _close_door_sprites = pygame.sprite.Group()
+_bar_sprites = pygame.sprite.Group()
 
 
 PLAYER_POS = 0, 0
@@ -104,6 +105,7 @@ class Player(Creature):
         self.sword_cooldown = data.SWORD_COOLDOWN
         self.bow_cooldown = data.BOW_COOLDOWN
         self.close_hit_cooldown = data.CLOSE_HIT_COOLDOWN
+        self.player_health_bar = HeathBar((0.5, 0.5), 'health_bar', self.durability)
 
     def update_cooldowns(self):
         if self.sword_cooldown >= data.SWORD_COOLDOWN:
@@ -122,6 +124,7 @@ class Player(Creature):
     def update(self, *events, kill=False):
         if kill:
             self.kill()
+        self.player_health_bar.take_current_health(self.durability)
         self.update_cooldowns()
         self.update_image(0 if self.pos[0] <= pygame.mouse.get_pos()[0] / 50 else 1)
         self.rect = self.rect.move(self.vx / data.FPS, 0)
@@ -150,6 +153,10 @@ class Player(Creature):
             self.char_state = GameState.LOSE
             data.playing_music.stop()
             pygame.mixer.Channel(0).play(data.lose_music)
+
+    def init_health_bar(self):
+        pass
+
 
     def get_state(self):
         return self.char_state
@@ -223,6 +230,28 @@ class Enemy(Creature):
 
     def target_distance(self, pos):
         return math_operations.hypotenuse(*self.pos, *pos)
+
+
+class HeathBar(pygame.sprite.Sprite):
+    def __init__(self, pos, sprite_type, health):
+        super().__init__(_all_sprites, _bar_sprites)
+        self.pos = self.x, self.y = pos
+        self.max_health = self.health = health
+        self.image = data.images[sprite_type]
+        self.image = pygame.transform.scale(self.image, (160, 30))
+        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
+                                               data.TITLE_SIZE[1] * self.y)
+
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
+        self.image = pygame.transform.scale(self.image, (160 * self.health // self.max_health, 30))
+        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
+                                               data.TITLE_SIZE[1] * self.y)
+
+    def take_current_health(self, health):
+        self.health = health if health > 0 else 0
 
 
 class Item(pygame.sprite.Sprite):

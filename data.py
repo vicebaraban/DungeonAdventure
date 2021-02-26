@@ -36,7 +36,8 @@ images = {'player': pygame.transform.scale(loading.load_image('character.png'), 
           'pause_background': pygame.transform.scale(loading.load_image('pause_background.png'), (800, 600)),
           'victory_background': pygame.transform.scale(loading.load_image('victory_background.png'), (800, 600)),
           'lose_background': pygame.transform.scale(loading.load_image('lose_background.png'), (800, 600)),
-          'cursor': pygame.transform.scale(loading.load_image('cursor.png'), (30, 30))}
+          'cursor': pygame.transform.scale(loading.load_image('cursor.png'), (30, 30)),
+          'health_bar': loading.load_image('health_bar.png')}
 
 pygame.mixer.init()
 main_menu_music = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'menu.wav'))
