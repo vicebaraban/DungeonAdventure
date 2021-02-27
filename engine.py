@@ -233,10 +233,19 @@ class Enemy(Creature):
         return math_operations.hypotenuse(*self.pos, *pos)
 
 
-class HeathBar(pygame.sprite.Sprite):
-    def __init__(self, pos, sprite_type, health):
-        super().__init__(_all_sprites, _interface_sprites, _bar_sprites)
+class Interface(pygame.sprite.Sprite):
+    def __init__(self, pos, *groups):
+        super().__init__(_all_sprites, _interface_sprites, *groups)
         self.pos = self.x, self.y = pos
+
+    def update(self, *events, kill=False):
+        if kill:
+            self.kill()
+
+
+class HeathBar(Interface):
+    def __init__(self, pos, sprite_type, health):
+        super().__init__(pos, _bar_sprites)
         self.max_health = self.health = health
         self.image = data.images[sprite_type]
         self.image = pygame.transform.scale(self.image, (160, 30))
@@ -253,6 +262,10 @@ class HeathBar(pygame.sprite.Sprite):
 
     def take_current_health(self, health):
         self.health = health if health > 0 else 0
+
+
+class SkillBar(Interface):
+    pass
 
 
 class Item(pygame.sprite.Sprite):
