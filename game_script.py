@@ -128,7 +128,7 @@ class Game:
         engine._bullet_sprites.draw(self._screen)
         engine._character_sprites.draw(self._screen)
         engine._equipped_item_sprites.draw(self._screen)
-        engine._bar_sprites.draw((self._screen))
+        engine._bar_sprites.draw(self._screen)
         engine._all_sprites.update(self._events)
         if self._character.get_state() == engine.GameState.WIN:
             self.game_state = engine.GameState.WIN

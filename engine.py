@@ -21,6 +21,7 @@ _map_items_sprites = pygame.sprite.Group()
 _open_door_sprites = pygame.sprite.Group()
 _close_door_sprites = pygame.sprite.Group()
 _bar_sprites = pygame.sprite.Group()
+_interface_sprites = pygame.sprite.Group()
 
 
 PLAYER_POS = 0, 0
@@ -234,7 +235,7 @@ class Enemy(Creature):
 
 class HeathBar(pygame.sprite.Sprite):
     def __init__(self, pos, sprite_type, health):
-        super().__init__(_all_sprites, _bar_sprites)
+        super().__init__(_all_sprites, _interface_sprites, _bar_sprites)
         self.pos = self.x, self.y = pos
         self.max_health = self.health = health
         self.image = data.images[sprite_type]
@@ -411,8 +412,9 @@ class Camera:
         self.dy = 0
 
     def apply(self, obj):
-        obj.rect.x += self.dx
-        obj.rect.y += self.dy
+        if obj not in _interface_sprites:
+            obj.rect.x += self.dx
+            obj.rect.y += self.dy
 
     def update(self, target):
         self.dx = -(target.rect.x + target.rect.w // 2 - data.WIDTH // 2)
