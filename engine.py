@@ -162,13 +162,13 @@ class Player(Creature):
         elif equipped == 'hand':
             if pygame.sprite.spritecollideany(self, _map_items_sprites):
                 pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
-                self.inventory.add_item('key')
+                self.inventory.add_item(Key(self.pos, _item_sprites))
                 data.take_item_sound.play()
                 print(self.keys_inventory)
-        elif pygame.sprite.spritecollideany(self, _close_door_sprites) and equipped == 'key':
+        elif pygame.sprite.spritecollideany(self, _close_door_sprites) and isinstance(equipped, Key):
             _close_door_sprites.update(activate=True)
+            _equipped_item_sprites.remove(self.inventory.equipped())
             del self.inventory.storage[self.inventory.get_index()]
-            print(1)
 
     def move(self, event):
         if event.key == pygame.K_w:

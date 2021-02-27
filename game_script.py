@@ -129,7 +129,6 @@ class Game:
         self._update_camera()
         self._game_map.draw(self._screen)
         engine._bullet_sprites.draw(self._screen)
-        engine._open_door_sprites.draw(self._screen)
         engine._character_sprites.draw(self._screen)
         engine._equipped_item_sprites.draw(self._screen)
         engine._interface_sprites.draw(self._screen)
