@@ -24,6 +24,7 @@ class Game:
     def _init_playing(self):
         self._game_map = engine.GameMap('map1.txt')
         self._character = engine.Player(self._game_map.start_pos, engine._character_sprites, engine._player_sprites)
+        self.ui = engine.Interface((0, 500), 'playing_ui')
         pygame.mixer.Channel(0).play(data.playing_music, -1)
 
     def _init_pause_menu(self):
@@ -132,6 +133,7 @@ class Game:
         engine._character_sprites.draw(self._screen)
         engine._equipped_item_sprites.draw(self._screen)
         engine._interface_sprites.draw(self._screen)
+        engine._bar_sprites.draw(self._screen)
         engine._all_sprites.update(self._events)
         if self._character.get_state() == engine.GameState.WIN:
             self.game_state = engine.GameState.WIN

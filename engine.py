@@ -97,7 +97,7 @@ class Player(Creature):
         self.sword_cooldown = data.SWORD_COOLDOWN
         self.bow_cooldown = data.BOW_COOLDOWN
         self.close_hit_cooldown = data.CLOSE_HIT_COOLDOWN
-        self.player_health_bar = HeathBar((0.5, 0.5), 'health_bar', self.durability)
+        self.player_health_bar = HeathBar((20, 520), 'health_bar', self.durability)
 
     def update_cooldowns(self):
         if self.sword_cooldown >= data.SWORD_COOLDOWN:
@@ -261,10 +261,13 @@ class Inventory:
         pass
 
     def take_active_tool(self, position):
-        if isinstance(self.storage[self.active_position], Item):
-            _equipped_item_sprites.remove(self.storage[self.active_position])
+        if isinstance(self.storage[self.active_position if self.active_position
+                                                           + 1 <= len(self.storage) else 0], Item):
+            _equipped_item_sprites.remove(self.storage[self.active_position if self.active_position
+                                                                               + 1 <= len(self.storage) else 0])
         self.active_position = position if position + 1 <= len(self.storage) else 0
-        if isinstance(self.storage[self.active_position], Item):
+        if isinstance(self.storage[self.active_position if self.active_position
+                                                           + 1 <= len(self.storage) else 0], Item):
             _equipped_item_sprites.add(self.storage[self.active_position])
 
     def add_item(self, item):
@@ -274,7 +277,8 @@ class Inventory:
         return self.active_position
 
     def equipped(self):
-        return self.storage[self.active_position] if self.storage else None
+        return self.storage[self.active_position if self.active_position
+                                                    + 1 <= len(self.storage) else 0] if self.storage else None
 
     def update_tools_pos(self, x, y, rect):
         for tool in self.storage:
@@ -284,31 +288,31 @@ class Inventory:
 
 
 class Interface(pygame.sprite.Sprite):
-    def __init__(self, pos, *groups):
+    def __init__(self, pos, sprite_type, *groups):
         super().__init__(_all_sprites, _interface_sprites, *groups)
         self.pos = self.x, self.y = pos
+        self.image = data.images[sprite_type]
+        self.rect = self.image.get_rect().move(self.x, self.y)
 
     def update(self, *events, kill=False):
         if kill:
             self.kill()
+        self.rect = self.image.get_rect().move(self.x, self.y)
 
 
 class HeathBar(Interface):
     def __init__(self, pos, sprite_type, health):
-        super().__init__(pos, _bar_sprites)
+        super().__init__(pos, sprite_type, _bar_sprites)
         self.max_health = self.health = health
-        self.image = data.images[sprite_type]
-        self.image = pygame.transform.scale(self.image, (160, 30))
-        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
-                                               data.TITLE_SIZE[1] * self.y)
+        self.image = pygame.transform.scale(self.image, (150, 25))
+        self.rect = self.image.get_rect().move(self.x, self.y)
 
     def update(self, *events, kill=False):
         if kill:
             self.kill()
-        self.image = pygame.transform.scale(self.image, (160 * self.health // self.max_health, 30))
+        self.image = pygame.transform.scale(self.image, (150 * self.health // self.max_health, 25))
         self.rect = self.image.get_rect()
-        self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
-                                               data.TITLE_SIZE[1] * self.y)
+        self.rect = self.image.get_rect().move(self.x, self.y)
 
     def take_current_health(self, health):
         self.health = health if health > 0 else 0
