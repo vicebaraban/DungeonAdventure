@@ -41,7 +41,7 @@ def generate_level(level):
                 engine.Tile('floor', (x, y), engine._tile_sprites)
             elif level[y][x] == 'A':
                 engine.Tile('floor', (x, y), engine._tile_sprites)
-                engine.Door('door_opened', (x, y), engine._tile_sprites, engine._open_door_sprites)
+                engine.Door('door_opened', (x, y), engine._tile_sprites, engine._door_sprites)
                 start_pos = x, y
             elif level[y][x] == 'B':
                 engine.Tile('floor', (x, y), engine._tile_sprites)

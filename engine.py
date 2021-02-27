@@ -11,7 +11,6 @@ _impenetrable = pygame.sprite.Group()
 _player_sprites = pygame.sprite.Group()
 _equipped_item_sprites = pygame.sprite.Group()
 _bullet_sprites = pygame.sprite.Group()
-_attack_bullet_sprites = pygame.sprite.Group()
 _non_attack_bullet_sprites = pygame.sprite.Group()
 _melee_hit = pygame.sprite.Group()
 _item_sprites = pygame.sprite.Group()
@@ -20,6 +19,7 @@ _enemy_sprites = pygame.sprite.Group()
 _pause_sprites = pygame.sprite.Group()
 _menu_sprites = pygame.sprite.Group()
 _map_items_sprites = pygame.sprite.Group()
+_door_sprites = pygame.sprite.Group()
 _open_door_sprites = pygame.sprite.Group()
 _close_door_sprites = pygame.sprite.Group()
 _bar_sprites = pygame.sprite.Group()
@@ -60,8 +60,6 @@ class Creature(pygame.sprite.Sprite):
         super().__init__(_all_sprites, *groups)
         self.pos = self.x, self.y = pos
         self.angle = 0
-        self.inventory = ['']
-        self.equipped = ''
         self._init_sprite(sprite_type)
 
     def _init_sprite(self, sprite_type):
@@ -92,7 +90,7 @@ class Creature(pygame.sprite.Sprite):
 class Player(Creature):
     def __init__(self, pos, *groups):
         super().__init__('player', pos, *groups)
-        self.inventory = Inventory(['', RangeWeapon('bow', self.pos, _item_sprites),
+        self.inventory = Inventory(['hand', RangeWeapon('bow', self.pos, _item_sprites),
                                     MeleeWeapon('sword', self.pos, _item_sprites)])
         self.keys_inventory = 0
         self.char_state = GameState.PLAYING
@@ -131,15 +129,6 @@ class Player(Creature):
         if pygame.sprite.spritecollideany(self, _bullet_sprites) and _enemy_sprites.has(self):
             pygame.sprite.spritecollideany(self, _bullet_sprites).kill()
             self.durability -= 7
-        if pygame.sprite.spritecollideany(self, _map_items_sprites):
-            pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
-            self.keys_inventory += 1
-            data.take_item_sound.play()
-            print(self.keys_inventory)
-        if pygame.sprite.spritecollideany(self, _close_door_sprites) and self.keys_inventory == 2:
-            self.char_state = GameState.WIN
-            pygame.mixer.pause()
-            data.victory_music.play()
         if pygame.sprite.spritecollideany(self, _enemy_sprites) and self.close_hit_cooldown == 0:
             self.durability -= 3
             data.char_hit_sound.play()
@@ -157,6 +146,7 @@ class Player(Creature):
         return self.char_state
 
     def attack(self):
+        print(self.inventory.storage)
         equipped = self.inventory.equipped()
         if equipped and isinstance(equipped, Tool):
             if isinstance(equipped, RangeWeapon) and self.bow_cooldown == 0:
@@ -169,6 +159,16 @@ class Player(Creature):
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
                 self.sword_cooldown += 1
                 data.sword_hit_sound.play()
+        elif equipped == 'hand':
+            if pygame.sprite.spritecollideany(self, _map_items_sprites):
+                pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
+                self.inventory.add_item('key')
+                data.take_item_sound.play()
+                print(self.keys_inventory)
+        elif pygame.sprite.spritecollideany(self, _close_door_sprites) and equipped == 'key':
+            _close_door_sprites.update(activate=True)
+            del self.inventory.storage[self.inventory.get_index()]
+            print(1)
 
     def move(self, event):
         if event.key == pygame.K_w:
@@ -191,12 +191,26 @@ class Player(Creature):
             position = 0
         elif event.key == pygame.K_2:
             position = 1
-        else:
+        elif event.key == pygame.K_3:
             position = 2
+        elif event.key == pygame.K_4:
+            position = 3
+        elif event.key == pygame.K_5:
+            position = 4
+        elif event.key == pygame.K_6:
+            position = 5
+        elif event.key == pygame.K_7:
+            position = 6
+        elif event.key == pygame.K_8:
+            position = 7
+        elif event.key == pygame.K_9:
+            position = 8
+        else:
+            position = 9
         self.inventory.take_active_tool(position)
-        #self.equipped = self.inventory[(self.inventory.index(self.equipped) +
-        #                                (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
-        #                               len(self.inventory)]
+        # self.equipped = self.inventory[(self.inventory.index(self.equipped) +
+        #                                 (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
+        #                                len(self.inventory)]
 
 
 class Enemy(Creature):
@@ -249,12 +263,15 @@ class Inventory:
     def take_active_tool(self, position):
         if isinstance(self.storage[self.active_position], Item):
             _equipped_item_sprites.remove(self.storage[self.active_position])
-        self.active_position = position
+        self.active_position = position if position + 1 <= len(self.storage) else 0
         if isinstance(self.storage[self.active_position], Item):
             _equipped_item_sprites.add(self.storage[self.active_position])
 
     def add_item(self, item):
         self.storage.append(item)
+
+    def get_index(self):
+        return self.active_position
 
     def equipped(self):
         return self.storage[self.active_position] if self.storage else None
@@ -357,7 +374,8 @@ class RangeWeapon(Tool):
         if kill:
             self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
-        angle = math_operations.calculate_angle(self.x * data.TITLE_WIDTH, self.y * data.TITLE_HEIGHT, *pygame.mouse.get_pos())
+        angle = math_operations.calculate_angle(self.x * data.TITLE_WIDTH,
+                                                self.y * data.TITLE_HEIGHT, *pygame.mouse.get_pos())
         self.image, self.rect = self.rotate(self.orig_image, self.rect, angle)
 
 
@@ -378,10 +396,13 @@ class MeleeWeapon(Tool):
             self.image = self.orig_image
 
 
-class Hand(Tool):
-    def hit(self, look_target):
-        Bullet('arrow', (self.x + 15 / data.TITLE_WIDTH, self.y + 11 / data.TITLE_HEIGHT),
-               look_target, _melee_hit, not_bullet=True)
+# class Hand:
+#     def __init__(self, pos):
+#         self.pos = self.x, self.y = pos
+#
+#     def interaction(self, look_target):
+#         Bullet('arrow', (self.x + 15 / data.TITLE_WIDTH, self.y + 11 / data.TITLE_HEIGHT),
+#                look_target, _non_attack_bullet_sprites, not_bullet=True)
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -394,14 +415,20 @@ class Bullet(pygame.sprite.Sprite):
                                                                                            *pygame.mouse.get_pos()),
                                                            data.BULLET_SPEED, 1)
         self.angle = angle
+        if _melee_hit in groups:
+            self.durability = 3
+        elif _non_attack_bullet_sprites in groups:
+            self.durability = 2
+        else:
+            self.durability = 10
         self._init_sprite(sprite_type)
+        print(self.durability)
 
     def _init_sprite(self, sprite_type):
         self.image = data.images[sprite_type]
         self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
                                                data.TITLE_SIZE[1] * self.y)
         self.image, self.rect = self.rotate(self.image, self.rect, self.angle)
-        self.durability = 3
 
     def update(self, *events, kill=False):
         if kill:
@@ -423,15 +450,6 @@ class Bullet(pygame.sprite.Sprite):
         self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
 
 
-class AttackBullet(Bullet):
-    pass
-
-
-class NonAttackBullet(Bullet):
-    def __init__(self, sprite_type, pos, angle, *groups, not_bullet=False):
-        super().__init__(sprite_type, pos, angle, *groups, not_bullet)
-
-
 class Tile(pygame.sprite.Sprite):
     def __init__(self, sprite_type, pos, *groups):
         super().__init__(_all_sprites, *groups)
@@ -444,7 +462,7 @@ class Tile(pygame.sprite.Sprite):
             self.kill()
         self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
 
-    def _init_sprite(self,sprite_type):
+    def _init_sprite(self, sprite_type):
         self.orig_image = data.images[sprite_type]
         self.image = self.orig_image
         self.rect = self.image.get_rect().move(data.TITLE_SIZE[0] * self.x,
@@ -454,6 +472,16 @@ class Tile(pygame.sprite.Sprite):
 class Door(Tile):
     def __init__(self, sprite_type, pos, *groups):
         super().__init__(sprite_type, pos, *groups)
+        self.durability = 2
+
+    def update(self, *events, kill=False, activate=False):
+        if kill:
+            self.kill()
+        self.rect = self.rect.move(self.vx / data.FPS, self.vy / data.FPS)
+        if activate:
+            self.durability -= 1
+        if self.durability == 0:
+            self.kill()
 
 
 class GameMap:

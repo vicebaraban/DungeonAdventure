@@ -61,7 +61,8 @@ class Game:
                 elif event.key == pygame.K_ESCAPE:
                     self.game_state = engine.GameState.PAUSE
                     self._init_pause_menu()
-                elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
+                elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4, pygame.K_5, pygame.K_6,
+                                   pygame.K_7, pygame.K_8, pygame.K_9, pygame.K_0):
                     self._character.change_equipped_item(event)
             if event.type == pygame.MOUSEBUTTONDOWN:
             #    if event.button in (pygame.BUTTON_WHEELDOWN, pygame.BUTTON_WHEELUP):
@@ -128,6 +129,7 @@ class Game:
         self._update_camera()
         self._game_map.draw(self._screen)
         engine._bullet_sprites.draw(self._screen)
+        engine._open_door_sprites.draw(self._screen)
         engine._character_sprites.draw(self._screen)
         engine._equipped_item_sprites.draw(self._screen)
         engine._interface_sprites.draw(self._screen)
@@ -140,6 +142,10 @@ class Game:
             self._init_final_menu()
         for enemy in engine._enemy_sprites:
             enemy.move()
+        if not len(engine._close_door_sprites.sprites()):
+            self._character.char_state = engine.GameState.WIN
+            pygame.mixer.Channel(0).stop()
+            pygame.mixer.Channel(0).play(data.victory_music)
 
     def _render_pause_menu(self):
         self._screen.blit(data.images['pause_background'], [0, 0])
