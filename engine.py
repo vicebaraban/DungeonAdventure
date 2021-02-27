@@ -11,6 +11,8 @@ _impenetrable = pygame.sprite.Group()
 _player_sprites = pygame.sprite.Group()
 _equipped_item_sprites = pygame.sprite.Group()
 _bullet_sprites = pygame.sprite.Group()
+_attack_bullet_sprites = pygame.sprite.Group()
+_non_attack_bullet_sprites = pygame.sprite.Group()
 _melee_hit = pygame.sprite.Group()
 _item_sprites = pygame.sprite.Group()
 _character_sprites = pygame.sprite.Group()
@@ -58,7 +60,7 @@ class Creature(pygame.sprite.Sprite):
         super().__init__(_all_sprites, *groups)
         self.pos = self.x, self.y = pos
         self.angle = 0
-        self.weapon_inventory = ['']
+        self.inventory = ['']
         self.equipped = ''
         self._init_sprite(sprite_type)
 
@@ -86,21 +88,12 @@ class Creature(pygame.sprite.Sprite):
     def update_pos(self):
         self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
 
-    def change_equipped_item(self, event):
-        if isinstance(self.equipped, Item):
-            _equipped_item_sprites.remove(self.equipped)
-        self.equipped = self.weapon_inventory[(self.weapon_inventory.index(self.equipped) +
-                                               (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
-                                              len(self.weapon_inventory)]
-        if isinstance(self.equipped, Item):
-            _equipped_item_sprites.add(self.equipped)
-
 
 class Player(Creature):
     def __init__(self, pos, *groups):
         super().__init__('player', pos, *groups)
-        self.weapon_inventory = ['', RangeWeapon('bow', self.pos, _item_sprites),
-                                 MeleeWeapon('sword', self.pos, _item_sprites)]
+        self.inventory = Inventory(['', RangeWeapon('bow', self.pos, _item_sprites),
+                                    MeleeWeapon('sword', self.pos, _item_sprites)])
         self.keys_inventory = 0
         self.char_state = GameState.PLAYING
         self.sword_cooldown = data.SWORD_COOLDOWN
@@ -123,6 +116,7 @@ class Player(Creature):
             self.close_hit_cooldown += 1
 
     def update(self, *events, kill=False):
+        #print(self.inventory.equipped())
         if kill:
             self.kill()
         self.player_health_bar.take_current_health(self.durability)
@@ -151,6 +145,7 @@ class Player(Creature):
             data.char_hit_sound.play()
             print(self.durability)
         if self.durability <= 0:
+            self.durability = 0
             self.char_state = GameState.LOSE
             data.playing_music.stop()
             pygame.mixer.Channel(0).play(data.lose_music)
@@ -158,19 +153,19 @@ class Player(Creature):
     def init_health_bar(self):
         pass
 
-
     def get_state(self):
         return self.char_state
 
     def attack(self):
-        if self.equipped and isinstance(self.equipped, Weapon):
-            if isinstance(self.equipped, RangeWeapon) and self.bow_cooldown == 0:
-                self.equipped.shoot(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
+        equipped = self.inventory.equipped()
+        if equipped and isinstance(equipped, Tool):
+            if isinstance(equipped, RangeWeapon) and self.bow_cooldown == 0:
+                equipped.shoot(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
                 self.bow_cooldown += 1
                 data.bow_shoot_sound.play()
-            elif isinstance(self.equipped, MeleeWeapon) and self.sword_cooldown == 0:
-                self.equipped.hit(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
+            elif isinstance(equipped, MeleeWeapon) and self.sword_cooldown == 0:
+                equipped.hit(math_operations.calculate_angle(*self.pos, pygame.mouse.get_pos()[0]
                                                                     / 50, pygame.mouse.get_pos()[1] / 50))
                 self.sword_cooldown += 1
                 data.sword_hit_sound.play()
@@ -189,10 +184,19 @@ class Player(Creature):
         global PLAYER_POS
         self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
         PLAYER_POS = self.pos[:]
-        for item in self.weapon_inventory:
-            if isinstance(item, Item):
-                item.update_pos(self.x + (self.rect.width - item.rect.width) // 2 /
-                                data.TITLE_WIDTH, self.y + 5 / data.TITLE_HEIGHT)
+        self.inventory.update_tools_pos(self.x, self.y, self.rect)
+
+    def change_equipped_item(self, event):
+        if event.key == pygame.K_1:
+            position = 0
+        elif event.key == pygame.K_2:
+            position = 1
+        else:
+            position = 2
+        self.inventory.take_active_tool(position)
+        #self.equipped = self.inventory[(self.inventory.index(self.equipped) +
+        #                                (1 if event.button == pygame.BUTTON_WHEELUP else -1)) %
+        #                               len(self.inventory)]
 
 
 class Enemy(Creature):
@@ -231,6 +235,35 @@ class Enemy(Creature):
 
     def target_distance(self, pos):
         return math_operations.hypotenuse(*self.pos, *pos)
+
+
+class Inventory:
+    def __init__(self, items):
+        self.storage = [*items]
+        print(self.storage)
+        self.active_position = 0
+
+    def update(self):
+        pass
+
+    def take_active_tool(self, position):
+        if isinstance(self.storage[self.active_position], Item):
+            _equipped_item_sprites.remove(self.storage[self.active_position])
+        self.active_position = position
+        if isinstance(self.storage[self.active_position], Item):
+            _equipped_item_sprites.add(self.storage[self.active_position])
+
+    def add_item(self, item):
+        self.storage.append(item)
+
+    def equipped(self):
+        return self.storage[self.active_position] if self.storage else None
+
+    def update_tools_pos(self, x, y, rect):
+        for tool in self.storage:
+            if isinstance(tool, Item):
+                tool.update_pos(x + (rect.width - tool.rect.width) // 2 /
+                                data.TITLE_WIDTH, y + 5 / data.TITLE_HEIGHT)
 
 
 class Interface(pygame.sprite.Sprite):
@@ -312,11 +345,11 @@ class Key(Item):
         self.pos = self.x, self.y = pos
 
 
-class Weapon(Item):
+class Tool(Item):
     pass
 
 
-class RangeWeapon(Weapon):
+class RangeWeapon(Tool):
     def shoot(self, angle):
         Bullet('arrow', (self.x + 15 / data.TITLE_WIDTH, self.y + 11 / data.TITLE_HEIGHT), angle, _bullet_sprites)
 
@@ -328,7 +361,7 @@ class RangeWeapon(Weapon):
         self.image, self.rect = self.rotate(self.orig_image, self.rect, angle)
 
 
-class MeleeWeapon(Weapon):
+class MeleeWeapon(Tool):
     def hit(self, look_target):
         Bullet('arrow', (self.x + 15 / data.TITLE_WIDTH, self.y + 11 / data.TITLE_HEIGHT),
                look_target, _melee_hit, not_bullet=True)
@@ -343,6 +376,12 @@ class MeleeWeapon(Weapon):
             self.image = pygame.transform.flip(self.orig_image, True, False)
         else:
             self.image = self.orig_image
+
+
+class Hand(Tool):
+    def hit(self, look_target):
+        Bullet('arrow', (self.x + 15 / data.TITLE_WIDTH, self.y + 11 / data.TITLE_HEIGHT),
+               look_target, _melee_hit, not_bullet=True)
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -382,6 +421,15 @@ class Bullet(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(
             x * data.TITLE_WIDTH, y * data.TITLE_HEIGHT)
         self.pos = self.x, self.y = self.rect.x / data.TITLE_WIDTH, self.rect.y / data.TITLE_HEIGHT
+
+
+class AttackBullet(Bullet):
+    pass
+
+
+class NonAttackBullet(Bullet):
+    def __init__(self, sprite_type, pos, angle, *groups, not_bullet=False):
+        super().__init__(sprite_type, pos, angle, *groups, not_bullet)
 
 
 class Tile(pygame.sprite.Sprite):

@@ -39,6 +39,8 @@ images = {'player': pygame.transform.scale(loading.load_image('character.png'), 
           'cursor': pygame.transform.scale(loading.load_image('cursor.png'), (30, 30)),
           'health_bar': loading.load_image('health_bar.png')}
 
+#inventory_items = {'hand': }
+
 pygame.mixer.init()
 main_menu_music = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'menu.wav'))
 playing_music = pygame.mixer.Sound(os.path.join(SOUND_PATH, 'playing.wav'))

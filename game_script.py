@@ -61,9 +61,11 @@ class Game:
                 elif event.key == pygame.K_ESCAPE:
                     self.game_state = engine.GameState.PAUSE
                     self._init_pause_menu()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button in (pygame.BUTTON_WHEELDOWN, pygame.BUTTON_WHEELUP):
+                elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3):
                     self._character.change_equipped_item(event)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+            #    if event.button in (pygame.BUTTON_WHEELDOWN, pygame.BUTTON_WHEELUP):
+            #        self._character.change_equipped_item(event)
                 self._attack_events(event)
         self._character.update_pos()
         for enemy in engine._enemy_sprites:
