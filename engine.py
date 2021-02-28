@@ -168,7 +168,9 @@ class Player(Creature):
             _close_door_sprites.update(activate=True)
             _equipped_item_sprites.remove(self.inventory.equipped())
             del self.inventory.storage[self.inventory.get_index()]
-            _icon_tool_interface_sprites.update(position=self.inventory.get_index())
+            # _icon_tool_interface_sprites.update(position=self.inventory.get_index())
+            self.inventory.active_position -= 1
+            self.inventory.update()
         self.inventory.update()
 
     def move(self, event):
@@ -260,6 +262,8 @@ class Inventory:
         self.active_position = 0
 
     def update(self):
+        _icon_tool_interface_sprites.update(kill=True)
+        _icon_tool_interface_sprites.add(ItemIcon((175 + self.active_position * 60, 515), 0, 'outline'))
         for index, tool in enumerate(self.storage):
             if tool == 'hand':
                 _icon_tool_interface_sprites.add(ItemIcon((180 + index * 60, 520), index, 'hand'))
@@ -306,7 +310,7 @@ class ItemIcon(pygame.sprite.Sprite):
         if sprite_type == 'bow':
             self.image = pygame.transform.rotate(self.image, -45)
             self.image = pygame.transform.scale(self.image, (45, 45))
-        else:
+        elif sprite_type != 'outline':
             self.image = pygame.transform.scale(self.image, (50, 50))
         self.rect = self.image.get_rect().move(self.x, self.y)
 

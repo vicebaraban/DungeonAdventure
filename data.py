@@ -39,7 +39,8 @@ images = {'player': pygame.transform.scale(loading.load_image('character.png'), 
           'lose_background': pygame.transform.scale(loading.load_image('lose_background.png'), (800, 600)),
           'cursor': pygame.transform.scale(loading.load_image('cursor.png'), (30, 30)),
           'health_bar': loading.load_image('health_bar.png'),
-          'playing_ui': loading.load_image('playing_ui.png')}
+          'playing_ui': loading.load_image('playing_ui.png'),
+          'outline': loading.load_image('outline.png')}
 
 # inventory_items = {'hand': }
 
