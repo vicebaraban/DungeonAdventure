@@ -24,6 +24,7 @@ _open_door_sprites = pygame.sprite.Group()
 _close_door_sprites = pygame.sprite.Group()
 _bar_sprites = pygame.sprite.Group()
 _interface_sprites = pygame.sprite.Group()
+_icon_tool_interface_sprites = pygame.sprite.Group()
 
 
 PLAYER_POS = 0, 0
@@ -92,12 +93,12 @@ class Player(Creature):
         super().__init__('player', pos, *groups)
         self.inventory = Inventory(['hand', RangeWeapon('bow', self.pos, _item_sprites),
                                     MeleeWeapon('sword', self.pos, _item_sprites)])
-        self.keys_inventory = 0
         self.char_state = GameState.PLAYING
         self.sword_cooldown = data.SWORD_COOLDOWN
         self.bow_cooldown = data.BOW_COOLDOWN
         self.close_hit_cooldown = data.CLOSE_HIT_COOLDOWN
         self.player_health_bar = HeathBar((20, 520), 'health_bar', self.durability)
+        self.inventory.update()
 
     def update_cooldowns(self):
         if self.sword_cooldown >= data.SWORD_COOLDOWN:
@@ -146,7 +147,6 @@ class Player(Creature):
         return self.char_state
 
     def attack(self):
-        print(self.inventory.storage)
         equipped = self.inventory.equipped()
         if equipped and isinstance(equipped, Tool):
             if isinstance(equipped, RangeWeapon) and self.bow_cooldown == 0:
@@ -164,11 +164,12 @@ class Player(Creature):
                 pygame.sprite.spritecollideany(self, _map_items_sprites).kill()
                 self.inventory.add_item(Key(self.pos, _item_sprites))
                 data.take_item_sound.play()
-                print(self.keys_inventory)
         elif pygame.sprite.spritecollideany(self, _close_door_sprites) and isinstance(equipped, Key):
             _close_door_sprites.update(activate=True)
             _equipped_item_sprites.remove(self.inventory.equipped())
             del self.inventory.storage[self.inventory.get_index()]
+            _icon_tool_interface_sprites.update(position=self.inventory.get_index())
+        self.inventory.update()
 
     def move(self, event):
         if event.key == pygame.K_w:
@@ -187,6 +188,7 @@ class Player(Creature):
         self.inventory.update_tools_pos(self.x, self.y, self.rect)
 
     def change_equipped_item(self, event):
+        self.inventory.update()
         if event.key == pygame.K_1:
             position = 0
         elif event.key == pygame.K_2:
@@ -258,7 +260,15 @@ class Inventory:
         self.active_position = 0
 
     def update(self):
-        pass
+        for index, tool in enumerate(self.storage):
+            if tool == 'hand':
+                _icon_tool_interface_sprites.add(ItemIcon((180 + index * 60, 520), index, 'hand'))
+            elif isinstance(tool, RangeWeapon):
+                _icon_tool_interface_sprites.add(ItemIcon((180 + index * 60, 520), index, 'bow'))
+            elif isinstance(tool, MeleeWeapon):
+                _icon_tool_interface_sprites.add(ItemIcon((180 + index * 60, 520), index, 'sword'))
+            elif isinstance(tool, Key):
+                _icon_tool_interface_sprites.add(ItemIcon((180 + index * 60, 520), index, 'key'))
 
     def take_active_tool(self, position):
         if isinstance(self.storage[self.active_position if self.active_position
@@ -285,6 +295,27 @@ class Inventory:
             if isinstance(tool, Item):
                 tool.update_pos(x + (rect.width - tool.rect.width) // 2 /
                                 data.TITLE_WIDTH, y + 5 / data.TITLE_HEIGHT)
+
+
+class ItemIcon(pygame.sprite.Sprite):
+    def __init__(self, pos, inventory_position, sprite_type, *groups):
+        super().__init__(_all_sprites, _interface_sprites, _icon_tool_interface_sprites, *groups)
+        self.pos = self.x, self.y = pos
+        self.inventory_position = inventory_position
+        self.image = data.images[sprite_type]
+        if sprite_type == 'bow':
+            self.image = pygame.transform.rotate(self.image, -45)
+            self.image = pygame.transform.scale(self.image, (45, 45))
+        else:
+            self.image = pygame.transform.scale(self.image, (50, 50))
+        self.rect = self.image.get_rect().move(self.x, self.y)
+
+    def update(self, *events, kill=False, position=777):
+        if kill:
+            self.kill()
+        if position <= self.inventory_position:
+            self.kill()
+        self.rect = self.image.get_rect().move(self.x, self.y)
 
 
 class Interface(pygame.sprite.Sprite):
