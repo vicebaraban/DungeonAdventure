@@ -115,7 +115,6 @@ class Player(Creature):
             self.close_hit_cooldown += 1
 
     def update(self, *events, kill=False):
-        #print(self.inventory.equipped())
         if kill:
             self.kill()
         self.player_health_bar.take_current_health(self.durability)
@@ -133,7 +132,6 @@ class Player(Creature):
         if pygame.sprite.spritecollideany(self, _enemy_sprites) and self.close_hit_cooldown == 0:
             self.durability -= 3
             data.char_hit_sound.play()
-            print(self.durability)
         if self.durability <= 0:
             self.durability = 0
             self.char_state = GameState.LOSE
@@ -258,7 +256,6 @@ class Enemy(Creature):
 class Inventory:
     def __init__(self, items):
         self.storage = [*items]
-        print(self.storage)
         self.active_position = 0
 
     def update(self):
@@ -461,7 +458,6 @@ class Bullet(pygame.sprite.Sprite):
         else:
             self.durability = 10
         self._init_sprite(sprite_type)
-        print(self.durability)
 
     def _init_sprite(self, sprite_type):
         self.image = data.images[sprite_type]

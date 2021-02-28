@@ -7,6 +7,7 @@ import data
 class Game:
     def __init__(self):
         pygame.init()
+        print('''Welcome to Dungeon Adventure game. Good luck and have fun!''')
         self.running = False
         self._init_screen()
         self._init_camera()
