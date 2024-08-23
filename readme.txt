@@ -1,8 +1,10 @@
-Проект: Dungeon Adventure - игра на PyGame
-Суть проекта: предоставить пользователю возможность сыграть в Action-adventure игру
-Особенности: создание и редактирование карт (вручную), передвижение камеры, музыка
-Прочее: звуки игры, различные меню
-В архиве: readme.txt (этот файл - Пояснительная записка); main.py (основной файл проекта);
-	папки с файлы maps (карты), sounds (звуки), textures (текстуры);
-	data.py (константы и данные игры), engine.py (игровой движок), game_script.py (работа самой игры), 
-	loading.py (модуль загрузки изображений, карт), math_operations.py (модуль работы с математическими операциями)
+Dungeon Adventure
+Dungeon Adventure is a 2D game developed using Pygame library in Python. The game takes players on an exciting journey through dungeons where they engage in battles with enemies, search for salvation, and unleash superpowers.
+
+How to Play
+To start playing Dungeon Adventure, run the run.py file using Python 3.x interpreter. Make sure you have the Pygame library installed as it is a dependency for this game.
+
+Development Team
+Dungeon Adventure was initially developed by August Varlamov and Vladislav Gradusov as part of the Yandex Lyceum program.
+
+Enjoy your adventure in the dungeons! 🗡️🛡️💥
