@@ -1,5 +1,6 @@
 .Identifier
 :Zone.Identifier
+__pycache__/
 
 # User ================================
 Ignore other user-defined file #

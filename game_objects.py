@@ -85,9 +85,9 @@ class LvlManager:
         self.levels = [0 for _ in range(len(maps))]
         self.maps = maps
         self.levels[0] = 1
-        self.levels[1] = 1
-        self.levels[2] = 1
-        self.max_level = 2
+        self.levels[1] = 0
+        self.levels[2] = 0
+        self.max_level = 0
         self.active_level = 0
 
     def __len__(self):
